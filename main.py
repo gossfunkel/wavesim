@@ -90,6 +90,9 @@ class WaveSim(ShowBase):
 		self.fieldGeomNP.setRenderModeThickness(5.) 
 
 		self.accept("arrow_left", self.move, ["left"])
+		self.accept("arrow_right", self.move, ["right"])
+		self.accept("arrow_up", self.move, ["up"])
+		self.accept("arrow_down", self.move, ["down"])
 
 		#self.cam.lookAt(self.fieldGeomNP)
 
