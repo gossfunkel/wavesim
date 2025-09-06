@@ -1,7 +1,7 @@
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import Shader, loadPrcFileData, GeomVertexArrayFormat, GeomVertexFormat, GeomVertexData
 from panda3d.core import GeomVertexWriter, Geom, GeomNode, GeomPoints, GeomVertexReader, LVecBase3f
-from panda3d.core import TextureStage, ShaderInput, TexGenAttrib
+from panda3d.core import TextureStage, ShaderInput, TexGenAttrib, TransparencyAttrib
 from math import floor, sin, cos, sqrt
 import numpy as np
 
@@ -55,8 +55,8 @@ class WaveSim(ShowBase):
 		#self.fieldGeomNP.setRenderModePerspective(1)
 		#self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
 		self.fieldTS = TextureStage('fieldTS')
-		#self.fieldTS.setMode(M_dualTransparency)
-		self.fieldGeomNP.setTexScale(self.fieldTS, 5)
+		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual) #thanks @squiggle
+		#self.fieldGeomNP.setTexScale(self.fieldTS, 5)
 
 		self.accept("arrow_left", self.move, ["left"])
 		self.accept("arrow_right", self.move, ["right"])
