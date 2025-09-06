@@ -55,7 +55,7 @@ class WaveSim(ShowBase):
 		#self.fieldGeomNP.setRenderModePerspective(1)
 		#self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
 		self.fieldTS = TextureStage('fieldTS')
-		self.fieldTS.setMode(M_dualTransparency)
+		#self.fieldTS.setMode(M_dualTransparency)
 		self.fieldGeomNP.setTexScale(self.fieldTS, 5)
 
 		self.accept("arrow_left", self.move, ["left"])

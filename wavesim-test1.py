@@ -147,8 +147,8 @@ class WaveSim(ShowBase):
 app = WaveSim()
 
 shader = Shader.load(Shader.SL_GLSL,
-                     vertex="simplevert.vert",
-                     fragment="simplefrag.frag")
+                     vertex="wavesim-test1-vert.vert",
+                     fragment="wavesim-test1-frag.frag")
 render.setShader(shader)
 
 app.run()
