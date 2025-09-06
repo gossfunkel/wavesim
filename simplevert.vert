@@ -39,7 +39,7 @@ void main() {
 						sys_scale/2+(sys_scale/2* sin(frameNum)));
 	float coulForce1 = coulomb(p3d_Vertex.xyz - charge1,1.,50.);
 	float coulForce2 = coulomb(p3d_Vertex.xyz - charge2,1.,25.);
-	col = vec4(coulForce1+coulForce2, coulForce1, coulForce2, coulForce1+coulForce2);
+	col = vec4(coulForce1+coulForce2, coulForce1, coulForce2, (coulForce1+coulForce2)/10.);
 	gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 	texcoord = p3d_MultiTexCoord0;
 

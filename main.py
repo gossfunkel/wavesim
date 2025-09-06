@@ -22,7 +22,7 @@ class WaveSim(ShowBase):
 		self.scale = sys_scale
 		self.scale3d = self.scale*self.scale*self.scale
 
-		self.set_background_color(0.,0.,0.,1.)
+		self.set_background_color(.8,.8,.8,1.)
 
 		self.cam.setPos(self.scale/2,-60,self.scale/2)
 
