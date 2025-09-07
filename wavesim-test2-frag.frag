@@ -17,12 +17,10 @@ out vec4 p3d_FragColor;
 
 void main() {
 	// fade out colour from centre
-	float uvDist = abs(.5 - abs(texcoord.x)) + abs(.5 - abs(texcoord.y))*2.;
-	//vec2 uv = vec2((texcoord.x+.5)*(texcoord.x+.5)*(texcoord.x+.5)*(texcoord.x+.5),(texcoord.y+.5)*(texcoord.y+.5)*(texcoord.y+.5)*(texcoord.y+.5));
-	/*p3d_FragColor = vec4(col.x - uv.x - uv.y,
+	vec2 uv = vec2((texcoord.x+.5)/2.,(texcoord.y+.5)/2.);
+	p3d_FragColor = vec4(col.x - uv.x - uv.y,
 		col.y - uv.x - uv.y,
 		col.z - uv.x - uv.y,
-		col.w - uv.x - uv.y);*/
-	p3d_FragColor = vec4(col.x, col.y, col.z,1. - uvDist + (col.x + col.y + col.z)/3.);
+		col.w);
 
 }

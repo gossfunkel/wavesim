@@ -1,7 +1,6 @@
 #version 450
 
-//uniform mat4 p3d_ModelViewProjectionMatrix;
-uniform mat4 p3d_ViewProjectionMatrix;
+uniform mat4 p3d_ModelViewProjectionMatrix;
 
 // vertex inputs
 in vec4 p3d_Vertex;
@@ -36,14 +35,13 @@ void main() {
 						sys_scale/2+(sys_scale/4*cos(frameNum)),
 						sys_scale/2+(sys_scale/4* -sin(frameNum)));
 	vec3 charge2 = vec3(sys_scale/2+(sys_scale/4* -sin(frameNum)),
-						sys_scale/2+(sys_scale/4),
+						sys_scale/2+(sys_scale/4* -cos(frameNum)),
 						sys_scale/2+(sys_scale/4* sin(frameNum)));
-	float coulForce1 = coulomb(p3d_Vertex.xyz - charge1,1.,5.);
-	float coulForce2 = coulomb(p3d_Vertex.xyz - charge2,1.,10.);
+	float coulForce1 = coulomb(p3d_Vertex.xyz - charge1,1.,50.);
+	float coulForce2 = coulomb(p3d_Vertex.xyz - charge2,1.,25.);
 	//col = vec4(0., coulForce1, coulForce2, (coulForce1+coulForce2)/10.);
-	col = vec4((coulForce1+coulForce2)/2., coulForce1, coulForce2, 1.);
-	//gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
-	gl_Position = p3d_ViewProjectionMatrix * p3d_Vertex;
+	col = vec4(coulForce1+coulForce2, coulForce1, coulForce2, (coulForce1+coulForce2)/10.);
+	gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 	texcoord = p3d_MultiTexCoord0;
 
 	// pass vertices as texcoords

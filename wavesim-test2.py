@@ -38,7 +38,7 @@ class WaveSim(ShowBase):
 		for j in range(self.scale):
 			for i in range(self.scale*self.scale):
 				vertex.addData3(float(i%self.scale),float(j%self.scale),float(i/self.scale))
-				color.addData4(1.,1.,1.,1.)
+				color.addData4(1.,1.,1.,0.)
 
 		pointsPrim = GeomPoints(Geom.UHStatic)
 		pointsPrim.addConsecutiveVertices(0, self.scale3d)
@@ -51,12 +51,12 @@ class WaveSim(ShowBase):
 		fieldGeomNode = GeomNode('field')
 		fieldGeomNode.addGeom(points)
 		self.fieldGeomNP = render.attachNewNode(fieldGeomNode)
+		self.fieldGeomNP.setRenderModeThickness(42.) 
+		#self.fieldGeomNP.setRenderModePerspective(1)
+		#self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
 		self.fieldTS = TextureStage('fieldTS')
-		self.fieldGeomNP.set_tex_gen(self.fieldTS, TexGenAttrib.M_point_sprite)
-		self.fieldGeomNP.setRenderModeThickness(40.)
-		self.fieldGeomNP.set_tex_scale(self.fieldTS, 2.)
-		self.fieldGeomNP.set_tex_offset(self.fieldTS,.5)
 		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual) #thanks @squiggle
+		#self.fieldGeomNP.setTexScale(self.fieldTS, 5)
 
 		self.accept("arrow_left", self.move, ["left"])
 		self.accept("arrow_right", self.move, ["right"])
@@ -69,7 +69,7 @@ class WaveSim(ShowBase):
 
 	def update(self, task):
 		self.t += 0.01
-		self.cam.setPos(self.scale/2. + 50. * -sin(self.t*1.),self.scale/2. + 50. * cos(self.t*1.),self.scale*sin(self.t))
+		self.cam.setPos(self.scale/2. + 30. * -sin(self.t*1.),self.scale/2. + 30. * cos(self.t*1.),self.scale/2.)
 		self.cam.lookAt(self.scale/2.,self.scale/2.,self.scale/2.)
 
 		return task.cont
@@ -87,8 +87,9 @@ class WaveSim(ShowBase):
 app = WaveSim()
 
 shader = Shader.load(Shader.SL_GLSL,
-                     vertex="simplevert.vert",
-                     fragment="simplefrag.frag")
+                     vertex="wavesim-test2-vert.vert",
+                     fragment="wavesim-test2-frag.frag")
+#shader.setShaderInput(sys_scale)
 render.setShader(shader)
 render.setShaderInput(ShaderInput('sys_scale',sys_scale))
 
