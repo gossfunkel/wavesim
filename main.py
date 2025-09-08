@@ -13,7 +13,7 @@ threading-model Cull/Draw
 """
 loadPrcFileData("", config_vars)
 
-sys_scale = 25
+sys_scale = 20
 
 class WaveSim(ShowBase):
 	def __init__(self):
@@ -51,12 +51,15 @@ class WaveSim(ShowBase):
 		fieldGeomNode = GeomNode('field')
 		fieldGeomNode.addGeom(points)
 		self.fieldGeomNP = render.attachNewNode(fieldGeomNode)
-		self.fieldTS = TextureStage('fieldTS')
-		self.fieldGeomNP.set_tex_gen(self.fieldTS, TexGenAttrib.M_point_sprite)
+		#self.fieldTS = TextureStage('fieldTS')
+		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual) #thanks @squiggle 
+		#self.fieldGeomNP.set_tex_gen(self.fieldTS, TexGenAttrib.M_point_sprite)
+		self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
 		self.fieldGeomNP.setRenderModeThickness(40.)
-		self.fieldGeomNP.set_tex_scale(self.fieldTS, 2.)
-		self.fieldGeomNP.set_tex_offset(self.fieldTS,.5)
-		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual) #thanks @squiggle
+		#self.fieldGeomNP.set_tex_scale(self.fieldTS, 2.)
+		self.fieldGeomNP.set_tex_scale(TextureStage.getDefault(), 2.)
+		#self.fieldGeomNP.set_tex_offset(self.fieldTS,-1.)
+		self.fieldGeomNP.set_tex_offset(TextureStage.getDefault(),1.)
 
 		self.accept("arrow_left", self.move, ["left"])
 		self.accept("arrow_right", self.move, ["right"])
