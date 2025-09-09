@@ -7,7 +7,6 @@ uniform mat4 p3d_ModelViewProjectionMatrix;
 in vec4 p3d_Vertex;
 in vec2 p3d_MultiTexCoord0;
 in vec4 p3d_Color;
-in float scale;
 uniform int osg_FrameNumber;
 
 uniform float sys_scale;
@@ -18,12 +17,12 @@ out vec2 texcoord;
 //out vec3 col;
 out vec4 col;
 
-float coulomb(vec3 r, float q1, float q2) {
+/*float coulomb(vec3 r, float q1, float q2) {
 	float q = q1 * q2;
 	float rAbsolute = sqrt(r.x*r.x+r.y*r.y+r.z*r.z);
 	if (rAbsolute == 0) return 1.5e+308;
 	else return  q/(rAbsolute*rAbsolute);
-}
+}*/
 
 void main() {
 	float frameNum = float(osg_FrameNumber)/50.;
@@ -46,7 +45,7 @@ void main() {
 	col = p3d_Color;
 	gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 	//gl_Position = p3d_ViewProjectionMatrix * p3d_Vertex;
-	texcoord = p3d_MultiTexCoord0*scale;
+	texcoord = p3d_MultiTexCoord0;
 
 	// pass vertices as texcoords
 }

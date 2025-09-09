@@ -11,13 +11,15 @@ uniform vec2 resolution;
 in vec2 texcoord;
 //in vec3 col;
 in vec4 col;
+in float scale;
 
 // out to screen
 out vec4 p3d_FragColor;
 
 void main() {
 	// fade out colour from centre
-	float uvDist = pow(sqrt(abs((.5-texcoord.x)*(.5-texcoord.x)) + abs((.5-texcoord.y)*(.5-texcoord.y))),1.6);
+	// uv = (2. * resolution.x)/2. + resolution.y or something idk
+	float uvDist = pow(sqrt(abs((.5-texcoord.x)*(.5-texcoord.x)) + abs((.5-texcoord.y)*(.5-texcoord.y))),.5);
 	//vec2 uv = vec2((texcoord.x+.5)*(texcoord.x+.5)*(texcoord.x+.5)*(texcoord.x+.5),(texcoord.y+.5)*(texcoord.y+.5)*(texcoord.y+.5)*(texcoord.y+.5));
 	//p3d_FragColor = vec4(col.x - uvDist, col.y - uvDist, col.z - uvDist,(col.x + col.y + col.z)/3. - uvDist);
 	p3d_FragColor = vec4(col.x - uvDist, 

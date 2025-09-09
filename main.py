@@ -51,10 +51,10 @@ class WaveSim(ShowBase):
 		#for j in range(self.scale):
 		#	for i in range(self.scale*self.scale):
 		vertex.addData3(0.,0.,0.)
-		color.addData4(1.,0.,0.,1.)
+		color.addData4(1.,1.,0.,1.)
 		scale.addData1(1.)
 		vertex.addData3(30.,0.,0.)
-		color.addData4(0.,0.,1.,1.)
+		color.addData4(0.,1.,1.,1.)
 		scale.addData1(1.5)
 		vertex.addData3(15.,0.,22.)
 		color.addData4(0.,1.,0.,1.)
