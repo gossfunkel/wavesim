@@ -11,7 +11,6 @@ uniform vec2 resolution;
 in vec2 texcoord;
 //in vec3 col;
 in vec4 col;
-in float scale;
 
 // out to screen
 out vec4 p3d_FragColor;
@@ -22,8 +21,11 @@ void main() {
 	float uvDist = pow(sqrt(abs((.5-texcoord.x)*(.5-texcoord.x)) + abs((.5-texcoord.y)*(.5-texcoord.y))),.5);
 	//vec2 uv = vec2((texcoord.x+.5)*(texcoord.x+.5)*(texcoord.x+.5)*(texcoord.x+.5),(texcoord.y+.5)*(texcoord.y+.5)*(texcoord.y+.5)*(texcoord.y+.5));
 	//p3d_FragColor = vec4(col.x - uvDist, col.y - uvDist, col.z - uvDist,(col.x + col.y + col.z)/3. - uvDist);
+
+	// todo: normalise colour values so that FF0000 and FFFF00 are the same size
 	p3d_FragColor = vec4(col.x - uvDist, 
 						 col.y - uvDist, 
 						 col.z - uvDist,
-						 (col.x + col.y + col.z)/3. - uvDist);
+						 //(col.x + col.y + col.z)/3. - uvDist);
+						col.w - uvDist);
 }

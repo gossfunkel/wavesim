@@ -7,6 +7,7 @@ uniform mat4 p3d_ModelViewProjectionMatrix;
 in vec4 p3d_Vertex;
 in vec2 p3d_MultiTexCoord0;
 in vec4 p3d_Color;
+in float scale;
 uniform int osg_FrameNumber;
 
 uniform float sys_scale;
@@ -43,6 +44,7 @@ void main() {
 	//col = vec4(0., coulForce1, coulForce2, (coulForce1+coulForce2)/10.);
 	//col = vec4((coulForce1+coulForce2)/2., coulForce1, coulForce2, 1.);
 	col = p3d_Color;
+	col.w = scale/5.;
 	gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 	//gl_Position = p3d_ViewProjectionMatrix * p3d_Vertex;
 	texcoord = p3d_MultiTexCoord0;

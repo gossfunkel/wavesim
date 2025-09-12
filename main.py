@@ -15,6 +15,16 @@ loadPrcFileData("", config_vars)
 
 sys_scale = 20
 spriteNum = 3
+col = {
+	"oxygen_red": (1.,0.,0.,1.),
+	"carbon_yellow": (1.,1.,0.,1.),
+	"nitrogen_green": (0.,1.,0.,1.),
+	"helium_aqua": (0.,1.,1.,1.),
+	"hydrogen_blue": (0.,0.,1.,1.)
+}
+
+# scale has a maximum value of 3.5- effective minimum is around 1
+sprites = []
 
 class WaveSim(ShowBase):
 	def __init__(self):
@@ -30,8 +40,8 @@ class WaveSim(ShowBase):
 		# custom geom format
 		vaf = GeomVertexArrayFormat()
 		vaf.addColumn("vertex", 3, Geom.NTFloat32, Geom.CPoint)
-		vaf.addColumn("color", 4, Geom.NTFloat32, Geom.CPoint)
-		vaf.addColumn("scale", 1, Geom.NTFloat32, Geom.CPoint)
+		vaf.addColumn("color", 4, Geom.NTFloat32, Geom.CColor)
+		vaf.addColumn("scale", 1, Geom.NTFloat32, Geom.COther)
 		#vaf.addColumn("charge", 1, Geom.NTFloat32, Geom.CPoint)
 		#vaf.addColumn("spinVector", 4, Geom.NTFloat32, Geom.CPoint)
 		#vertexFormat = GeomVertexFormat.getV3cp() # columns: vertex, colour ('color' packed RGBA style)
@@ -51,14 +61,14 @@ class WaveSim(ShowBase):
 		#for j in range(self.scale):
 		#	for i in range(self.scale*self.scale):
 		vertex.addData3(0.,0.,0.)
-		color.addData4(1.,1.,0.,1.)
+		color.addData4(col["hydrogen_blue"])
 		scale.addData1(1.)
 		vertex.addData3(30.,0.,0.)
-		color.addData4(0.,1.,1.,1.)
+		color.addData4(col["helium_aqua"])
 		scale.addData1(1.5)
 		vertex.addData3(15.,0.,22.)
-		color.addData4(0.,1.,0.,1.)
-		scale.addData1(2.)
+		color.addData4(col["oxygen_red"])
+		scale.addData1(3.5)
 
 		pointsPrim = GeomPoints(Geom.UHStatic)
 		pointsPrim.addConsecutiveVertices(0, spriteNum)
