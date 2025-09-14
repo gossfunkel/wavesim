@@ -32,7 +32,7 @@ float spherical_Y00 (vec3 r, float phase) {
 }
 
 void main() {
-	float frameNum = float(osg_FrameNumber)/50.;
+	float frameNum = float(osg_FrameNumber);
 	/*vec3 charge1 = vec3(mod(sys_scale/2+(sys_scale/2*sin(frameNum)),sys_scale),
 						mod(sys_scale/2+(sys_scale/2*cos(frameNum)),sys_scale),
 						mod(sys_scale/2+(sys_scale/2* -sin(frameNum)),sys_scale));
@@ -52,7 +52,9 @@ void main() {
 	//col = p3d_Color;
 	//col.w = scale/5.;
 	float sphericalHarmonic = spherical_Y00(p3d_Vertex.xyz, (int(frameNum)%360));
-	col = vec4(sphericalHarmonic,0.,sphericalHarmonic,scale*.2);
+	float sphericalHarmonicMax = spherical_Y00(p3d_Vertex.xyz, 360);
+	float propSpherHarm = sphericalHarmonic/sphericalHarmonicMax;
+	col = vec4(propSpherHarm,0.,propSpherHarm,propSpherHarm *scale*.5);
 	gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 	//gl_Position = p3d_ViewProjectionMatrix * p3d_Vertex;
 	texcoord = p3d_MultiTexCoord0;
