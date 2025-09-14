@@ -10,6 +10,8 @@ in vec4 p3d_Color;
 in float scale;
 uniform int osg_FrameNumber;
 
+const float pi_sqrt = sqrt(3.141592653589793238462643383);
+
 uniform float sys_scale;
 //in vec4 anything; // column named anything; number of components matches that of the vertex array
 
@@ -24,6 +26,10 @@ out vec4 col;
 	if (rAbsolute == 0) return 1.5e+308;
 	else return  q/(rAbsolute*rAbsolute);
 }*/
+
+float spherical_Y00 (vec3 r, float phase) {
+	return (1/(2*pi_sqrt) + phase);
+}
 
 void main() {
 	float frameNum = float(osg_FrameNumber)/50.;
@@ -43,11 +49,14 @@ void main() {
 	//float coulForce2 = coulomb(p3d_Vertex.xyz - charge2,1.,10.);
 	//col = vec4(0., coulForce1, coulForce2, (coulForce1+coulForce2)/10.);
 	//col = vec4((coulForce1+coulForce2)/2., coulForce1, coulForce2, 1.);
-	col = p3d_Color;
-	col.w = scale/5.;
+	//col = p3d_Color;
+	//col.w = scale/5.;
+	float sphericalHarmonic = spherical_Y00(p3d_Vertex.xyz, (int(frameNum)%360));
+	col = vec4(sphericalHarmonic,0.,sphericalHarmonic,scale*.2);
 	gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 	//gl_Position = p3d_ViewProjectionMatrix * p3d_Vertex;
 	texcoord = p3d_MultiTexCoord0;
 
 	// pass vertices as texcoords
 }
+

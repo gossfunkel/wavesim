@@ -4,24 +4,40 @@ from panda3d.core import GeomVertexWriter, Geom, GeomNode, GeomPoints, GeomVerte
 from panda3d.core import TextureStage, ShaderInput, TexGenAttrib, TransparencyAttrib
 from math import floor, sin, cos, sqrt
 import numpy as np
+#import type
 
 config_vars = """
 win-size 1920 1000
 show-frame-rate-meter 1
 hardware-animated-vertices true
 threading-model Cull/Draw
+sync-video false
 """
 loadPrcFileData("", config_vars)
 
 sys_scale = 20
-spriteNum = 3
+spriteNum = 20
+
 col = {
-	"oxygen_red": (1.,0.,0.,1.),
-	"carbon_yellow": (1.,1.,0.,1.),
-	"nitrogen_green": (0.,1.,0.,1.),
-	"helium_aqua": (0.,1.,1.,1.),
-	"hydrogen_blue": (0.,0.,1.,1.)
+	"white": 		  (1.,1.,1., 1.),
+	"electron_aqua":  (0.,1.,1., 1.),
+	"hydrogen_blue":  (0.,0.,1., 1.),
+	"carbon_yellow":  (1.,1.,0., 1.),
+	"nitrogen_green": (0.,1.,0., 1.),
+	"oxygen_red": 	  (1.,0.,0., 1.),
+	"fluorine_green": (0.,1.,.5, 1.)
 }
+
+class Element():
+	def __init__(self, name, atomicNum, atomicWeight):
+		assert typeof(name) == str, f'non-string variable passed to Element constructor for variable \'name\': requires str type'
+		assert typeof(atomicNum) == int, f'non-integer variable passed to Element constructor for variable \'atomicNum\': requires int type'
+		assert typeof(atomicWeight) == float, f'non-float variable passed to Element constructor for variable \'atomicWeight\': requires float type'
+		self.name = name
+		self.atomicNum = atomicNum
+		self.atomicWeight = atomicWeight
+		self.size = 3. * atomicWeight / 40.
+
 
 # scale has a maximum value of 3.5- effective minimum is around 1
 sprites = []
@@ -33,7 +49,7 @@ class WaveSim(ShowBase):
 		self.scale = sys_scale
 		self.scale3d = self.scale*self.scale*self.scale
 
-		self.set_background_color(.8,.8,.8,1.)
+		self.set_background_color(.56,.62,.6,1.)
 
 		self.cam.setPos(15.,-75.,11.)
 
@@ -51,27 +67,35 @@ class WaveSim(ShowBase):
 
 		# populate vertex array with rows for each vertex (point in field)
 		vdata = GeomVertexData('fieldVertexData', vertexFormat, Geom.UHStatic)
-		#vdata.setNumRows(self.scale3d)
-		vdata.setNumRows(spriteNum)
+		vdata.setNumRows(self.scale3d)
+		#vdata.setNumRows(spriteNum)
 
 		# fill array with default data
 		vertex = GeomVertexWriter(vdata, 'vertex')
-		color = GeomVertexWriter(vdata, 'color')
+		colour = GeomVertexWriter(vdata, 'color')
 		scale = GeomVertexWriter(vdata, 'scale')
-		#for j in range(self.scale):
-		#	for i in range(self.scale*self.scale):
+
+		# DEFINE GRAPH OF POINTS
+		for j in range(self.scale):
+			for i in range(self.scale*self.scale):
+				vertex.addData3(float(i%self.scale),float(j%self.scale),float(i/self.scale))
+				colour.addData4(0.,0.,0.,0.)
+				scale.addData1(1.)
+
+		""" # INDIVIDUALLY DEFINE POINTS
 		vertex.addData3(0.,0.,0.)
-		color.addData4(col["hydrogen_blue"])
+		color.addData4(col["electron_aqua"])
 		scale.addData1(1.)
 		vertex.addData3(30.,0.,0.)
-		color.addData4(col["helium_aqua"])
-		scale.addData1(1.5)
+		color.addData4(col["carbon_yellow"])
+		scale.addData1(2.)
 		vertex.addData3(15.,0.,22.)
 		color.addData4(col["oxygen_red"])
-		scale.addData1(3.5)
+		scale.addData1(2.2)
+		"""
 
 		pointsPrim = GeomPoints(Geom.UHStatic)
-		pointsPrim.addConsecutiveVertices(0, spriteNum)
+		pointsPrim.addConsecutiveVertices(0, self.scale3d)
 
 		points = Geom(vdata)
 		points.addPrimitive(pointsPrim)
@@ -86,7 +110,7 @@ class WaveSim(ShowBase):
 		#self.fieldGeomNP.set_tex_gen(self.fieldTS, TexGenAttrib.M_point_sprite)
 		self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
 		self.fieldGeomNP.setRenderModePerspective(1)
-		self.fieldGeomNP.setRenderModeThickness(10.)
+		self.fieldGeomNP.setRenderModeThickness(2.)
 		#self.fieldGeomNP.set_tex_scale(self.fieldTS, 2.)
 		self.fieldGeomNP.set_tex_scale(TextureStage.getDefault(), 2.)
 		#self.fieldGeomNP.set_tex_offset(self.fieldTS,-1.)
@@ -105,8 +129,9 @@ class WaveSim(ShowBase):
 
 	def update(self, task):
 		self.t += 0.01
+
 		#self.cam.setPos(self.scale/2. + 50. * -sin(self.t*1.),self.scale/2. + 50. * cos(self.t*1.),self.scale*sin(self.t))
-		#self.cam.lookAt(self.scale/2.,self.scale/2.,self.scale/2.)
+		self.cam.lookAt(self.scale/2.,self.scale/2.,self.scale/2.)
 
 		return task.cont
 
