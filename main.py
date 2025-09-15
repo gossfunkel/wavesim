@@ -80,7 +80,7 @@ class WaveSim(ShowBase):
 			for i in range(self.scale*self.scale):
 				vertex.addData3(float(i%self.scale),float(j%self.scale),float(i/self.scale))
 				colour.addData4(0.,0.,0.,0.)
-				scale.addData1(1.)
+				scale.addData1(.5)
 
 		""" # INDIVIDUALLY DEFINE POINTS
 		vertex.addData3(0.,0.,0.)
@@ -110,7 +110,7 @@ class WaveSim(ShowBase):
 		#self.fieldGeomNP.set_tex_gen(self.fieldTS, TexGenAttrib.M_point_sprite)
 		self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
 		#self.fieldGeomNP.setRenderModePerspective(1)
-		self.fieldGeomNP.setRenderModeThickness(100.)
+		self.fieldGeomNP.setRenderModeThickness(50.)
 		#self.fieldGeomNP.set_tex_scale(self.fieldTS, 2.)
 		self.fieldGeomNP.set_tex_scale(TextureStage.getDefault(), 2.)
 		#self.fieldGeomNP.set_tex_offset(self.fieldTS,-1.)

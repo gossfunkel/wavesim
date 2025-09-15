@@ -28,7 +28,7 @@ out vec4 col;
 }*/
 
 float spherical_Y00 (vec3 r, float phase) {
-	return (1/(2*pi_sqrt) + phase);
+	return (phase/(2*pi_sqrt));
 }
 
 void main() {
@@ -51,10 +51,13 @@ void main() {
 	//col = vec4((coulForce1+coulForce2)/2., coulForce1, coulForce2, 1.);
 	//col = p3d_Color;
 	//col.w = scale/5.;
-	float sphericalHarmonic = spherical_Y00(p3d_Vertex.xyz, (int(frameNum)%360));
-	float sphericalHarmonicMax = spherical_Y00(p3d_Vertex.xyz, 360);
-	float propSpherHarm = sphericalHarmonic/sphericalHarmonicMax;
-	col = vec4(propSpherHarm,0.,propSpherHarm,propSpherHarm *scale*.5);
+	float sphericalHarmonic = spherical_Y00(p3d_Vertex.xyz, (int(frameNum)%360));	// value for current phase
+	float sphericalHarmonicMax = spherical_Y00(p3d_Vertex.xyz, 360);				// value for max phase
+	float propSpherHarm = sphericalHarmonic/sphericalHarmonicMax;					// normalise output to range of 0 to 1
+	col = vec4(((4*propSpherHarm - .5)-(4*propSpherHarm - .5)*(4*propSpherHarm - .5))+1., 
+				((4*propSpherHarm - 1.5)-(4*propSpherHarm - 1.5)*(4*propSpherHarm - 1.5))+1.,
+				((4*propSpherHarm - 2.5)-(4*propSpherHarm - 2.5)*(4*propSpherHarm - 2.5))+1.,
+				scale);
 	gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 	//gl_Position = p3d_ViewProjectionMatrix * p3d_Vertex;
 	texcoord = p3d_MultiTexCoord0;
