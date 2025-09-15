@@ -29,7 +29,7 @@ out vec4 col;
 }*/
 
 float spherical_Y00 (vec3 r, float phase) {
-	return (phase/(2*pi_sqrt));
+	return phase/360 + (1/(2*pi_sqrt));
 }
 
 float spherical_Y1m1 (vec3 r, float phase, float y, float dist) {
@@ -42,12 +42,19 @@ void main() {
 	float r = sqrt(abs((midpoint.x-p3d_Vertex.x)*(midpoint.x-p3d_Vertex.x)) + 
 					abs((midpoint.y-p3d_Vertex.y)*(midpoint.y-p3d_Vertex.y)) +
 					abs((midpoint.z-p3d_Vertex.z)*(midpoint.z-p3d_Vertex.z)));
-	float sphericalHarmonic = spherical_Y1m1(p3d_Vertex.yzx, (int(frameNum)%360),p3d_Vertex.z-sys_scale/2,r);	// value for current phase
-	float sphericalHarmonicMax = spherical_Y1m1(p3d_Vertex.xyz, 360,sys_scale/2,14.1421356237);				// value for max phase, y, dist (pythagoras)
-	float propSpherHarm = sphericalHarmonic/sphericalHarmonicMax;					// normalise output to range of 0 to 1
-	col = vec4(((4*propSpherHarm - .5)-(4*propSpherHarm - .5)*(4*propSpherHarm - .5))+1., 
-				((4*propSpherHarm - 1.5)-(4*propSpherHarm - 1.5)*(4*propSpherHarm - 1.5))+1.,
-				((4*propSpherHarm - 2.5)-(4*propSpherHarm - 2.5)*(4*propSpherHarm - 2.5))+1.,
+	//float sphericalHarmonic = spherical_Y1m1(p3d_Vertex.yzx, (int(frameNum)%360),p3d_Vertex.z-sys_scale/2,r);	// value for current phase
+	//float sphericalHarmonicMax = spherical_Y1m1(p3d_Vertex.xyz, 360,sys_scale/2,14.1421356237);				// value for max phase, y, dist (pythagoras)
+	//float propSpherHarm = sphericalHarmonic/sphericalHarmonicMax;					// normalise output to range of 0 to 1
+
+	//float vertexPhase = mod(spherical_Y00(p3d_Vertex.zyx, frameNum),1.);
+	float vertexPhase = mod(spherical_Y1m1(p3d_Vertex.yzx, frameNum,p3d_Vertex.z-sys_scale/2,r),1.);
+	/*col = vec4(((5*propSpherHarm - .5)-(5*propSpherHarm - .5)*(5*propSpherHarm - .5))+1., 
+				((5*propSpherHarm - 1.5)-(5*propSpherHarm - 1.5)*(5*propSpherHarm - 1.5))+1.,
+				((5*propSpherHarm - 2.5)-(5*propSpherHarm - 2.5)*(5*propSpherHarm - 2.5))+1.,
+				scale);*/
+	col = vec4(((4*vertexPhase - .5)-(4*vertexPhase - .5)*(4*vertexPhase - .5))+1., 
+				((4*vertexPhase - 1.5)-(4*vertexPhase - 1.5)*(4*vertexPhase - 1.5))+1.,
+				((4*vertexPhase - 2.5)-(4*vertexPhase - 2.5)*(4*vertexPhase - 2.5))+1.,
 				scale);
 	gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 	//gl_Position = p3d_ViewProjectionMatrix * p3d_Vertex;
