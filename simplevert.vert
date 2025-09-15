@@ -11,6 +11,7 @@ in float scale;
 uniform int osg_FrameNumber;
 
 const float pi_sqrt = sqrt(3.141592653589793238462643383);
+const float sqrt34pi = sqrt(3/(4*3.141592653589793238462643383));
 
 uniform float sys_scale;
 //in vec4 anything; // column named anything; number of components matches that of the vertex array
@@ -31,28 +32,18 @@ float spherical_Y00 (vec3 r, float phase) {
 	return (phase/(2*pi_sqrt));
 }
 
+float spherical_Y1m1 (vec3 r, float phase, float y, float dist) {
+	return phase/360+(sqrt34pi*(y/dist));
+}
+
 void main() {
-	float frameNum = float(osg_FrameNumber);
-	/*vec3 charge1 = vec3(mod(sys_scale/2+(sys_scale/2*sin(frameNum)),sys_scale),
-						mod(sys_scale/2+(sys_scale/2*cos(frameNum)),sys_scale),
-						mod(sys_scale/2+(sys_scale/2* -sin(frameNum)),sys_scale));
-	vec3 charge2 = vec3(mod(sys_scale/2+(sys_scale/2* -sin(frameNum)),sys_scale),
-						mod(sys_scale/2+(sys_scale/2* -cos(frameNum)),sys_scale),
-						mod(sys_scale/2+(sys_scale/2* sin(frameNum)),sys_scale));*/
-	//vec3 charge1 = vec3(sys_scale/2+(sys_scale/4*sin(frameNum)),
-	//					sys_scale/2+(sys_scale/4*cos(frameNum)),
-	//					sys_scale/2+(sys_scale/4* -sin(frameNum)));
-	//vec3 charge2 = vec3(sys_scale/2+(sys_scale/4* -sin(frameNum)),
-	//					sys_scale/2+(sys_scale/4),
-	//					sys_scale/2+(sys_scale/4* sin(frameNum)));
-	//float coulForce1 = coulomb(p3d_Vertex.xyz - charge1,1.,5.);
-	//float coulForce2 = coulomb(p3d_Vertex.xyz - charge2,1.,10.);
-	//col = vec4(0., coulForce1, coulForce2, (coulForce1+coulForce2)/10.);
-	//col = vec4((coulForce1+coulForce2)/2., coulForce1, coulForce2, 1.);
-	//col = p3d_Color;
-	//col.w = scale/5.;
-	float sphericalHarmonic = spherical_Y00(p3d_Vertex.xyz, (int(frameNum)%360));	// value for current phase
-	float sphericalHarmonicMax = spherical_Y00(p3d_Vertex.xyz, 360);				// value for max phase
+	float frameNum = float(osg_FrameNumber)/4.;
+	vec3 midpoint = vec3(sys_scale/2,sys_scale/2,sys_scale/2);
+	float r = sqrt(abs((midpoint.x-p3d_Vertex.x)*(midpoint.x-p3d_Vertex.x)) + 
+					abs((midpoint.y-p3d_Vertex.y)*(midpoint.y-p3d_Vertex.y)) +
+					abs((midpoint.z-p3d_Vertex.z)*(midpoint.z-p3d_Vertex.z)));
+	float sphericalHarmonic = spherical_Y1m1(p3d_Vertex.yzx, (int(frameNum)%360),p3d_Vertex.z-sys_scale/2,r);	// value for current phase
+	float sphericalHarmonicMax = spherical_Y1m1(p3d_Vertex.xyz, 360,sys_scale/2,14.1421356237);				// value for max phase, y, dist (pythagoras)
 	float propSpherHarm = sphericalHarmonic/sphericalHarmonicMax;					// normalise output to range of 0 to 1
 	col = vec4(((4*propSpherHarm - .5)-(4*propSpherHarm - .5)*(4*propSpherHarm - .5))+1., 
 				((4*propSpherHarm - 1.5)-(4*propSpherHarm - 1.5)*(4*propSpherHarm - 1.5))+1.,

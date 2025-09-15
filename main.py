@@ -49,7 +49,7 @@ class WaveSim(ShowBase):
 		self.scale = sys_scale
 		self.scale3d = self.scale*self.scale*self.scale
 
-		self.set_background_color(.56,.62,.6,1.)
+		self.set_background_color(.08,.02,.14,1.)
 
 		self.cam.setPos(15.,-75.,11.)
 
@@ -128,9 +128,9 @@ class WaveSim(ShowBase):
 		self.taskMgr.add(self.update, "update")
 
 	def update(self, task):
-		self.t += 0.01
+		self.t += 0.001
 
-		self.cam.setPos(self.scale/2. + 50. * -sin(self.t*1.),self.scale/2. + 50. * cos(self.t*1.),self.scale*sin(self.t))
+		self.cam.setPos(self.scale/2. + 50. * -sin(self.t*1.),self.scale/2. + 50. * cos(self.t*1.),.5*self.scale*sin(self.t))
 		self.cam.lookAt(self.scale/2.,self.scale/2.,self.scale/2.)
 
 		return task.cont
