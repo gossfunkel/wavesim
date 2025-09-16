@@ -20,6 +20,10 @@ const float halfRt15pi = sqrt(15./pi)/2.;
 const float quartRt5pi = sqrt(5./pi)/4.;
 
 const float oneOverRt2 = 1./sqrt(2.);
+const float oneOverRt24 = 1./sqrt(24.);
+const float twoOverRt27 = 2./sqrt(27.);
+const float eightOver27rt6 = 8. / (27 * sqrt(6.));
+const float fourOver81rt30 = 4. / (81 * sqrt(30.));
 
 // output variables sent to fragment shader
 out vec2 texcoord;
@@ -75,6 +79,22 @@ float radial_R20 (float r) {
 	return oneOverRt2 * (1+r)*exp(r);
 }
 
+float radial_R21 (float r) {
+	return oneOverRt24 * r * exp(r * -.5);
+}
+
+float radial_R30 (float r) {
+	return twoOverRt27 * (1. - (2. * r)/3 + (2.*r*r)/27) * exp((r * -1.)/3);
+}
+
+float radial_R31 (float r) {
+	return eightOver27rt6 * (1. - r/6.) * r * exp((r * -1.)/3);
+}
+
+float radial_R32 (float r) {
+	return fourOver81rt30 * r * r * exp((r * -1.)/3);
+}
+
 void main() {
 	float frameNum = float(osg_FrameNumber)/4.;
 	vec3 midpoint = vec3(sys_scale/2,sys_scale/2,sys_scale/2);
@@ -82,25 +102,44 @@ void main() {
 					abs((midpoint.y-p3d_Vertex.y)*(midpoint.y-p3d_Vertex.y)) +
 					abs((midpoint.z-p3d_Vertex.z)*(midpoint.z-p3d_Vertex.z)));
 
+	// radial values for n = 1 to 3
+
 	// this line is not needed for the first eigenstate; only P and above require the distance to centre
 	// n.b. this is only required due to the coordinate system; if the origin was at the centre, we would not need this
 	vec3 distVert = vec3(p3d_Vertex.x-sys_scale/2,p3d_Vertex.y-sys_scale/2,p3d_Vertex.z-sys_scale/2);
 	
-	// S-orbital style
-	float vertexPhase = mod(spherical_Y00(frameNum),1.);
-	float radialVal = min(radial_R10(r),.65);
-
-	// P-orbital style
-	//float vertexPhase = mod(spherical_Y1(frameNum, distVert.y, r),1.);
+	// S-orbital style; l = 0, m = 0
+	//float vertexPhase = mod(spherical_Y00(frameNum),1.);
+	// 1S
+	//float radialVal = min(radial_R10(r),.65);
+	// 2S
 	//float radialVal = min(radial_R20(r),.65);
+	// 3S
+	//float radialVal = min(radial_R30(r),.65);
+
+	// P-orbital style; l = 1, m = -1 ,0, or 1
+	float vertexPhase = mod(spherical_Y1(frameNum, distVert.z, r),1.);
+	// 2P
+	float radialVal = min(10.*radial_R21(r),1.); // 2P normalised to 1
+	// 3P
+	//float radialVal = min(10*radial_R31(r),1.);
+	float radPosComp = max(radialVal, 0.);
+	float radNegComp = abs(min(radialVal, 0.));
 
 	// D-orbital style
 	//float vertexPhase = mod(spherical_Y22(distVert, frameNum, r),1.);
+	// 3D
+	//float radialVal = min(10.*radial_R32(r),1.);
+	//float radPosComp = max(radialVal, 0.);
+	//float radNegComp = abs(min(radialVal, 0.));
 
 	col = vec4(((4*vertexPhase - .5)-(4*vertexPhase - .5)*(4*vertexPhase - .5))+1., 
 				((4*vertexPhase - 1.5)-(4*vertexPhase - 1.5)*(4*vertexPhase - 1.5))+1.,
 				((4*vertexPhase - 2.5)-(4*vertexPhase - 2.5)*(4*vertexPhase - 2.5))+1.,
-				radialVal);
+				abs(radialVal) * scale); // set transparency equal to the absolute value of the radial func, product with the scale
+	col.x = col.x * radPosComp + col.y * radNegComp;
+	col.y = col.y * radPosComp + col.z * radNegComp;
+	col.z = col.z * radPosComp + col.x * radNegComp;
 	gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 	//gl_Position = p3d_ViewProjectionMatrix * p3d_Vertex;
 	texcoord = p3d_MultiTexCoord0;
