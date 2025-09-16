@@ -18,12 +18,15 @@ const float pi_sqrt = sqrt(pi);
 const float sqrt34pi = sqrt(3./(4.*pi));
 const float halfRt15pi = sqrt(15./pi)/2.;
 const float quartRt5pi = sqrt(5./pi)/4.;
+const float halfRt3pi = sqrt(3./pi)/2.;
+float piConstants[6]; // index constants based on pi to array (must be populated at runtime)
 
-const float oneOverRt2 = 1./sqrt(2.);
+//const float oneOverRt2 = 1./sqrt(2.);
 const float oneOverRt24 = 1./sqrt(24.);
 const float twoOverRt27 = 2./sqrt(27.);
 const float eightOver27rt6 = 8. / (27 * sqrt(6.));
 const float fourOver81rt30 = 4. / (81 * sqrt(30.));
+float numConstants[6]; // index numerical constants to array (must be populated at runtime)
 
 // output variables sent to fragment shader
 out vec2 texcoord;
@@ -36,34 +39,44 @@ out vec4 col;
 	else return  q/(rAbsolute*rAbsolute);
 }*/
 
+float sphericalHarmonic (vec3 r, float phase, float dist, int l, int m) { 
+	return phase/360 + (piConstants[5] * max(l-2.,0.)) * piConstants[l] * 
+								(pow(r.x,m + max(-1*max(m,-1),0.)) * r.y*(-1. * min(m,0.)) * (r.y*r.y*(1. * max(m,0))*(m-1)) + pow(r.z,l-abs(m)))/pow(dist,l);
+}
+
 float spherical_Y00 (float phase) { // S-type
-	return phase/360. + 1./(2. * pi_sqrt);
+	return phase/360. + 1./(2. * piConstants[1]);
 }
 
 float spherical_Y1 (float phase, float axis, float dist) {
 	// simply pass p3d_Vertex.x/y/z to the axis variable for the appropriately-oriented p-orbital
 	// 	n.b. remember that the z-axis in this coordinate space corresponds to the y-axis in the mathematical cartesian 
-	return phase/360. + sqrt34pi * (axis/dist);
+	return phase/360. + piConstants[2] * (axis/dist);
 }
 
 float spherical_Y2m2 (vec3 r, float phase, float dist) { // Dxy
-	return phase/360. + halfRt15pi * ((r.x*r.y)/(dist*dist));
+	return phase/360. + piConstants[3] * ((r.x*r.y)/(dist*dist));
 }
 
 float spherical_Y2m1 (vec3 r, float phase, float dist) { // Dyz
-	return phase/360. + halfRt15pi * ((r.y*r.z)/(dist*dist));
+	return phase/360. + piConstants[3] * ((r.y*r.z)/(dist*dist));
 }
 
 float spherical_Y20 (vec3 r, float phase, float dist) { // D3z^2
-	return phase/360. + quartRt5pi * ((3*r.z*r.z - dist*dist)/(dist*dist));
+	return phase/360. + piConstants[4] * ((3*r.z*r.z - dist*dist)/(dist*dist));
 }
 
 float spherical_Y21 (vec3 r, float phase, float dist) { // Dxz
-	return phase/360. + halfRt15pi * ((r.x*r.z)/(dist*dist));
+	return phase/360. + piConstants[3] * ((r.x*r.z)/(dist*dist));
 }
 
 float spherical_Y22 (vec3 r, float phase, float dist) { // Dx^2-y^2
-	return phase/360. + .5 * halfRt15pi * ((r.x*r.x - r.y*r.y)/(dist*dist));
+	return phase/360. + .5 * piConstants[3] * ((r.x*r.x - r.y*r.y)/(dist*dist));
+}
+
+float radial (float r, int n, int l) {
+	// this doesn't work for all functions yet; proper refactoring/algorithm needs done
+	return numConstants[n-1 + max(n-2,0)] * (1/pow(r,n-1-l) * (n-1)/(n* pow(r,max(n-2,0))) + pow(r,max(n-1,0))/(n*n*pow(r,n-3))) * pow(r,n-1) * exp((-1. * r)/n);
 }
 
 float radial_R10 (float r) {
@@ -76,27 +89,42 @@ float radial_R20 (float r) {
 	// max output at 0: 1/sqrt(2) = 0.707, at 1: 0.607, at 10: -0.0191
 	// n.b. phase inversion
 	r = -abs(r/2.);
-	return oneOverRt2 * (1+r)*exp(r);
+	return numConstants[1] * (1+r)*exp(r);
 }
 
 float radial_R21 (float r) {
-	return oneOverRt24 * r * exp(r * -.5);
+	return numConstants[2] * r * exp(r * -.5);
 }
 
 float radial_R30 (float r) {
-	return twoOverRt27 * (1. - (2. * r)/3 + (2.*r*r)/27) * exp((r * -1.)/3);
+	return numConstants[3] * (1. - (2. * r)/3 + (2.*r*r)/27) * exp((r * -1.)/3);
 }
 
 float radial_R31 (float r) {
-	return eightOver27rt6 * (1. - r/6.) * r * exp((r * -1.)/3);
+	return numConstants[4] * (1. - r/6.) * r * exp((r * -1.)/3);
 }
 
 float radial_R32 (float r) {
-	return fourOver81rt30 * r * r * exp((r * -1.)/3);
+	return numConstants[5] * r * r * exp((r * -1.)/3);
 }
 
 void main() {
+	piConstants[0] = pi;
+	piConstants[1] = pi_sqrt;
+	piConstants[2] = sqrt34pi;
+	piConstants[3] = halfRt15pi;
+	piConstants[4] = quartRt5pi;
+	piConstants[5] = halfRt3pi;
+
+	numConstants[0] = 2.;
+	numConstants[1] = 0.25;
+	numConstants[2] = oneOverRt24;
+	numConstants[3] = twoOverRt27;
+	numConstants[4] = eightOver27rt6;
+	numConstants[5] = fourOver81rt30;
+
 	float frameNum = float(osg_FrameNumber)/4.;
+	//float frameNum = 0.;
 	vec3 midpoint = vec3(sys_scale/2,sys_scale/2,sys_scale/2);
 	float r = sqrt(abs((midpoint.x-p3d_Vertex.x)*(midpoint.x-p3d_Vertex.x)) + 
 					abs((midpoint.y-p3d_Vertex.y)*(midpoint.y-p3d_Vertex.y)) +
@@ -118,20 +146,19 @@ void main() {
 	//float radialVal = min(radial_R30(r),.65);
 
 	// P-orbital style; l = 1, m = -1 ,0, or 1
-	float vertexPhase = mod(spherical_Y1(frameNum, distVert.z, r),1.);
+	//float vertexPhase = mod(spherical_Y1(frameNum, distVert.z, r),1.);
 	// 2P
-	float radialVal = min(10.*radial_R21(r),1.); // 2P normalised to 1
+	//float radialVal = min(10.*radial_R21(r),1.); // 2P normalised to 1
 	// 3P
 	//float radialVal = min(10*radial_R31(r),1.);
-	float radPosComp = max(radialVal, 0.);
-	float radNegComp = abs(min(radialVal, 0.));
 
 	// D-orbital style
-	//float vertexPhase = mod(spherical_Y22(distVert, frameNum, r),1.);
+	float vertexPhase = mod(spherical_Y20(distVert, frameNum, r),1.);
 	// 3D
-	//float radialVal = min(10.*radial_R32(r),1.);
-	//float radPosComp = max(radialVal, 0.);
-	//float radNegComp = abs(min(radialVal, 0.));
+	float radialVal = min(20.*radial_R32(r),1.);
+
+	float radPosComp = max(radialVal, 0.);
+	float radNegComp = abs(min(radialVal, 0.));
 
 	col = vec4(((4*vertexPhase - .5)-(4*vertexPhase - .5)*(4*vertexPhase - .5))+1., 
 				((4*vertexPhase - 1.5)-(4*vertexPhase - 1.5)*(4*vertexPhase - 1.5))+1.,

@@ -15,7 +15,7 @@ sync-video false
 """
 loadPrcFileData("", config_vars)
 
-sys_scale = 25
+sys_scale = 22
 #spriteNum = 25
 
 col = {
@@ -49,7 +49,7 @@ class WaveSim(ShowBase):
 		self.scale = sys_scale
 		self.scale3d = self.scale*self.scale*self.scale
 
-		self.set_background_color(.08,.02,.14,1.)
+		self.set_background_color(0.,0.,0.,1.)
 
 		self.cam.setPos(15.,-75.,11.)
 
@@ -80,7 +80,7 @@ class WaveSim(ShowBase):
 			for i in range(self.scale*self.scale):
 				vertex.addData3(float(i%self.scale),float(j%self.scale),float(i/self.scale))
 				colour.addData4(0.,0.,0.,0.)
-				scale.addData1(.65)
+				scale.addData1(.75)
 
 		""" # INDIVIDUALLY DEFINE POINTS
 		vertex.addData3(0.,0.,0.)
@@ -130,7 +130,7 @@ class WaveSim(ShowBase):
 	def update(self, task):
 		self.t += 0.001
 
-		self.cam.setPos(self.scale/2. + 50. * -sin(self.t*1.),self.scale/2. + 50. * cos(self.t*1.),.5*self.scale*sin(self.t))
+		self.cam.setPos(self.scale/2. + 50. * -sin(self.t*1.),self.scale/2. + 40. * cos(self.t*1.),.5*self.scale+sin(self.t))
 		self.cam.lookAt(self.scale/2.,self.scale/2.,self.scale/2.)
 
 		return task.cont
