@@ -15,8 +15,8 @@ sync-video false
 """
 loadPrcFileData("", config_vars)
 
-sys_scale = 20
-spriteNum = 20
+sys_scale = 25
+#spriteNum = 25
 
 col = {
 	"white": 		  (1.,1.,1., 1.),
