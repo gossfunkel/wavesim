@@ -40,8 +40,11 @@ out vec4 col;
 }*/
 
 float sphericalHarmonic (vec3 r, float phase, float dist, int l, int m) { 
-	return phase/360 + (piConstants[5] * max(l-2.,0.)) * piConstants[l] * 
-								(pow(r.x,m + max(-1*max(m,-1),0.)) * r.y*(-1. * min(m,0.)) * (r.y*r.y*(1. * max(m,0))*(m-1)) + pow(r.z,l-abs(m)))/pow(dist,l);
+	return phase/360 + pow(piConstants[5],min(max(l-2.,0.),1.)) * piConstants[l] 
+					* (pow(r.x,m + max(-1*max(m,-1),0.)) 
+					* pow(r.y,pow(1,-1. * min(m,0.)))
+					* pow(r.z,l-abs(m))
+					- pow(r.y*r.y*r.y,min(max(m-1.,0),1.)) - (dist*dist*max(l - max(l - l*m,0.),0.)))/pow(dist,l);
 }
 
 float spherical_Y00 (float phase) { // S-type
@@ -75,8 +78,9 @@ float spherical_Y22 (vec3 r, float phase, float dist) { // Dx^2-y^2
 }
 
 float radial (float r, int n, int l) {
-	// this doesn't work for all functions yet; proper refactoring/algorithm needs done
-	return numConstants[n-1 + max(n-2,0)] * (1/pow(r,n-1-l) * (n-1)/(n* pow(r,max(n-2,0))) + pow(r,max(n-1,0))/(n*n*pow(r,n-3))) * pow(r,n-1) * exp((-1. * r)/n);
+	return numConstants[n-1 + max(n-2,0)] 
+					* (1/pow(r,(n-1)-l) - ((n-1)-l)/(n* (n-1) * pow(r,(n-2) + l)) + (n-1)/(n*n*pow(r,n-3))) 
+					* pow(r,n-1) * exp((-1. * r)/n);
 }
 
 float radial_R10 (float r) {
@@ -125,19 +129,22 @@ void main() {
 
 	float frameNum = float(osg_FrameNumber)/4.;
 	//float frameNum = 0.;
+
+	// n.b. this is only required due to the coordinate system; if the origin was at the centre, we would not need this
+	vec3 r = vec3(p3d_Vertex.x-sys_scale/2,p3d_Vertex.y-sys_scale/2,p3d_Vertex.z-sys_scale/2);
 	vec3 midpoint = vec3(sys_scale/2,sys_scale/2,sys_scale/2);
-	float r = sqrt(abs((midpoint.x-p3d_Vertex.x)*(midpoint.x-p3d_Vertex.x)) + 
+	float dist = sqrt(abs((midpoint.x-p3d_Vertex.x)*(midpoint.x-p3d_Vertex.x)) + 
 					abs((midpoint.y-p3d_Vertex.y)*(midpoint.y-p3d_Vertex.y)) +
 					abs((midpoint.z-p3d_Vertex.z)*(midpoint.z-p3d_Vertex.z)));
-
-	// radial values for n = 1 to 3
-
-	// this line is not needed for the first eigenstate; only P and above require the distance to centre
-	// n.b. this is only required due to the coordinate system; if the origin was at the centre, we would not need this
-	vec3 distVert = vec3(p3d_Vertex.x-sys_scale/2,p3d_Vertex.y-sys_scale/2,p3d_Vertex.z-sys_scale/2);
 	
-	// S-orbital style; l = 0, m = 0
+	int n = 1; // n is a whole number
+	int l = 0; // l is a natural number < n
+	int m = 0; // |m| <= l
+	float vertexPhase = mod(sphericalHarmonic(r, frameNum, dist, l, m),1.);
 	//float vertexPhase = mod(spherical_Y00(frameNum),1.);
+	float radialVal = min(20.*radial(dist, n, l),1.);
+
+	// S-orbital style; l = 0, m = 0
 	// 1S
 	//float radialVal = min(radial_R10(r),.65);
 	// 2S
@@ -153,9 +160,9 @@ void main() {
 	//float radialVal = min(10*radial_R31(r),1.);
 
 	// D-orbital style
-	float vertexPhase = mod(spherical_Y20(distVert, frameNum, r),1.);
+	//float vertexPhase = mod(spherical_Y21(distVert, frameNum, r),1.);
 	// 3D
-	float radialVal = min(20.*radial_R32(r),1.);
+	//float radialVal = min(20.*radial_R32(r),1.);
 
 	float radPosComp = max(radialVal, 0.);
 	float radNegComp = abs(min(radialVal, 0.));

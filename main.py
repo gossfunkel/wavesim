@@ -80,7 +80,7 @@ class WaveSim(ShowBase):
 			for i in range(self.scale*self.scale):
 				vertex.addData3(float(i%self.scale),float(j%self.scale),float(i/self.scale))
 				colour.addData4(0.,0.,0.,0.)
-				scale.addData1(.75)
+				scale.addData1(.7)
 
 		""" # INDIVIDUALLY DEFINE POINTS
 		vertex.addData3(0.,0.,0.)
