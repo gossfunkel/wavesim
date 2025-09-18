@@ -51,7 +51,7 @@ class WaveSim(ShowBase):
 
 		self.set_background_color(0.,0.,0.,1.)
 
-		self.cam.setPos(15.,-75.,11.)
+		self.cam.setPos(15.,-50.,11.)
 
 		# custom geom format
 		vaf = GeomVertexArrayFormat()
@@ -109,7 +109,7 @@ class WaveSim(ShowBase):
 		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual) #thanks @squiggle 
 		#self.fieldGeomNP.set_tex_gen(self.fieldTS, TexGenAttrib.M_point_sprite)
 		self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
-		#self.fieldGeomNP.setRenderModePerspective(1)
+		self.fieldGeomNP.setRenderModePerspective(1)
 		self.fieldGeomNP.setRenderModeThickness(50.)
 		#self.fieldGeomNP.set_tex_scale(self.fieldTS, 2.)
 		self.fieldGeomNP.set_tex_scale(TextureStage.getDefault(), 2.)
@@ -130,7 +130,7 @@ class WaveSim(ShowBase):
 	def update(self, task):
 		self.t += 0.001
 
-		self.cam.setPos(self.scale/2. + 50. * -sin(self.t*1.),self.scale/2. + 40. * cos(self.t*1.),.5*self.scale+sin(self.t))
+		self.cam.setPos(self.scale/2. + 30. * -sin(self.t*1.),self.scale/2. + 30. * cos(self.t*1.),.5*self.scale+sin(self.t))
 		self.cam.lookAt(self.scale/2.,self.scale/2.,self.scale/2.)
 
 		return task.cont
