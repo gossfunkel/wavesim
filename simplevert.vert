@@ -42,17 +42,17 @@ out vec4 col;
 
 float sphericalHarmonic (vec3 r, float phase, float dist, int l, int m) { 
 	return phase/360 + pow(piConstants[3],min(max(l-1,0),1)) * piConstants[l] 
-					* (pow(r.x,clamp(max(m,0),0,1)) 
-					* pow(r.y,clamp(-1 * min(m,0.),0,1))
+					* (pow(r.x,clamp(max(m,0),0,1)+clamp(-1-m,0,1)) 
+					* pow(r.y,clamp(-1 * min(m,0),0,1))
 					* pow(r.z,l-abs(m))
 					+ pow(r.x,min(max(m-1,0),1)) - pow(r.y*r.y*r.y,min(max(m-1,0),1)) 
 					- (dist*dist*max(clamp(max(l-1,0),0,1) - clamp(m*m,0,1),0)) )/pow(dist,l);
 }
 
 float radial (float r, int n, int l) {
-	return numConstants[n-1 + max(n-2,0)] 
+	return pow(4-n,4) * (numConstants[n-1 + max(n-2,0)] 
 				* (1/pow(r,(n-1)-l) - ((n-1)-l)/(n* (n-1) * pow(r,(n-2) + l)) + (n-1)/(n*n*pow(r,n-3))) 
-				* pow(r,n-1) * exp((-1. * r)/n);
+				* pow(r,n-1) * exp((-1. * r)/n));
 }
 
 void main() {
@@ -79,12 +79,12 @@ void main() {
 					abs((midpoint.z-p3d_Vertex.z)*(midpoint.z-p3d_Vertex.z)));
 	
 	int n = 2; // n is a whole number, and tells us the energy level of the function
-	int l = 1; // l is a natural number < n, and tells us the geometry of the function
-	int m = -2; // |m| <= l, and tells us which configuration of the function this is
+	int l = 0; // l is a natural number < n, and tells us the geometry of the function
+	int m = 0; // |m| <= l, and tells us which configuration of the function this is
 	// quantum number ms is not handled here. What do you expect of me?!?
 
-	float vertexPhase = mod(sphericalHarmonic(r, frameNum, dist, l, m),1.);
-	float radialVal = min(4.*radial(dist, n, l),1.);
+	float vertexPhase = sphericalHarmonic(r, mod(frameNum,360.), dist, l, m);
+	float radialVal = clamp(radial(dist, n, l),0.,1.);
 
 	float radPosComp = max(radialVal, 0.);
 	float radNegComp = abs(min(radialVal, 0.));

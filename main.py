@@ -10,12 +10,13 @@ config_vars = """
 win-size 1920 1000
 show-frame-rate-meter 1
 hardware-animated-vertices true
-threading-model Cull/Draw
 sync-video false
+want-pstats 1
+pstats-tasks 1
 """
 loadPrcFileData("", config_vars)
 
-sys_scale = 22
+sys_scale = 30
 #spriteNum = 25
 
 col = {
@@ -109,7 +110,7 @@ class WaveSim(ShowBase):
 		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual) #thanks @squiggle 
 		#self.fieldGeomNP.set_tex_gen(self.fieldTS, TexGenAttrib.M_point_sprite)
 		self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
-		self.fieldGeomNP.setRenderModePerspective(1)
+		#self.fieldGeomNP.setRenderModePerspective(1)
 		self.fieldGeomNP.setRenderModeThickness(50.)
 		#self.fieldGeomNP.set_tex_scale(self.fieldTS, 2.)
 		self.fieldGeomNP.set_tex_scale(TextureStage.getDefault(), 2.)
