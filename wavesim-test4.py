@@ -1,9 +1,9 @@
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import Shader, ShaderInput, ShaderBuffer, loadPrcFileData
-from panda3d.core import Geom, GeomNode, GeomEnums, GeomTriangles, GeomVertexArrayFormat, GeomVertexFormat, GeomVertexData
-from panda3d.core import TextureStage, TexGenAttrib, TransparencyAttrib, LVecBase3f, BoundingBox
-from math import sin, cos
-#import numpy as np
+from panda3d.core import Shader, loadPrcFileData, GeomVertexArrayFormat, GeomVertexFormat, GeomVertexData
+from panda3d.core import GeomVertexWriter, Geom, GeomNode, GeomPoints, GeomVertexReader, LVecBase3f
+from panda3d.core import TextureStage, ShaderInput, TexGenAttrib, TransparencyAttrib
+from math import floor, sin, cos, sqrt
+import numpy as np
 #import type
 
 config_vars = """
@@ -16,8 +16,7 @@ pstats-tasks 1
 """
 loadPrcFileData("", config_vars)
 
-sys_scale = 30.0
-quadSize = 1.0
+sys_scale = 30
 #spriteNum = 25
 
 col = {
@@ -47,58 +46,76 @@ sprites = []
 class WaveSim(ShowBase):
 	def __init__(self):
 		ShowBase.__init__(self)
-
-		#global sys_scale
-		self.globalScale = int(sys_scale)
-		self.scale3d = int(self.globalScale*self.globalScale*self.globalScale)
+		global sys_scale
+		self.scale = sys_scale
+		self.scale3d = self.scale*self.scale*self.scale
 
 		self.set_background_color(0.,0.,0.,1.)
+
 		self.cam.setPos(15.,-50.,11.)
 
-		# DEFINE GRAPH OF QUADS
-		floats = []
-		for j in range(self.globalScale):
-			for i in range(self.globalScale*self.globalScale):
-				floats += 	[float(i%self.globalScale),float(j%self.globalScale),float(i/self.globalScale),
-								float(i%self.globalScale),float(j%self.globalScale)-1,float(i/self.globalScale),
-								1.,1.,1.,1.,
-								(quadSize)
-							]
+		# custom geom format
+		vaf = GeomVertexArrayFormat()
+		vaf.addColumn("vertex", 3, Geom.NTFloat32, Geom.CPoint)
+		vaf.addColumn("color", 4, Geom.NTFloat32, Geom.CColor)
+		vaf.addColumn("scale", 1, Geom.NTFloat32, Geom.COther)
+		#vaf.addColumn("charge", 1, Geom.NTFloat32, Geom.CPoint)
+		#vaf.addColumn("spinVector", 4, Geom.NTFloat32, Geom.CPoint)
+		#vertexFormat = GeomVertexFormat.getV3cp() # columns: vertex, colour ('color' packed RGBA style)
+		vertexFormat = GeomVertexFormat()
+		vertexFormat.addArray(vaf)
+		vertexFormat = GeomVertexFormat.registerFormat(vertexFormat)
 
-		initial_data = array('f', floats)
-		buffer = ShaderBuffer('dataPoints', initial_data.tobytes(), GeomEnums.UH_static)
-
-		vertexFormat = GeomVertexFormat.get_empty()
 		# populate vertex array with rows for each vertex (point in field)
-		vdata = GeomVertexData('dataPoints', vertexFormat, Geom.UHStatic)
-		vdata.setNumRows(self.scale3d*4)
+		vdata = GeomVertexData('fieldVertexData', vertexFormat, Geom.UHStatic)
+		vdata.setNumRows(self.scale3d)
 		#vdata.setNumRows(spriteNum)
 
-		# This represents a draw call, indicating how many vertices we want to draw.
-		triPrims = GeomTriangles(GeomEnums.UH_static)
-		triPrims.add_next_vertices(self.scale3d * 3)
-		#triPrims.addConsecutiveVertices(0, self.scale3d)
+		# fill array with default data
+		vertex = GeomVertexWriter(vdata, 'vertex')
+		colour = GeomVertexWriter(vdata, 'color')
+		scale = GeomVertexWriter(vdata, 'scale')
 
-		geometry = Geom(vdata)
-		geometry.addPrimitive(triPrims)
-		geometry.set_bounds(BoundingBox((0, 0, 0), (1, 1, 1))) # We need to set a bounding volume so that Panda doesn't try to cull it.
-		triPrims.closePrimitive()
+		# DEFINE GRAPH OF POINTS
+		for j in range(self.scale):
+			for i in range(self.scale*self.scale):
+				vertex.addData3(float(i%self.scale),float(j%self.scale),float(i/self.scale))
+				colour.addData4(0.,0.,0.,0.)
+				scale.addData1(.7)
+
+		""" # INDIVIDUALLY DEFINE POINTS
+		vertex.addData3(0.,0.,0.)
+		color.addData4(col["electron_aqua"])
+		scale.addData1(1.)
+		vertex.addData3(30.,0.,0.)
+		color.addData4(col["carbon_yellow"])
+		scale.addData1(2.)
+		vertex.addData3(15.,0.,22.)
+		color.addData4(col["oxygen_red"])
+		scale.addData1(2.2)
+		"""
+
+		pointsPrim = GeomPoints(Geom.UHStatic)
+		pointsPrim.addConsecutiveVertices(0, self.scale3d)
+
+		points = Geom(vdata)
+		points.addPrimitive(pointsPrim)
+		pointsPrim.closePrimitive()
 
 		# create geometry node for field
-		fieldGeomNode = GeomNode('fieldNode')
-		fieldGeomNode.addGeom(geometry)
-		
+		fieldGeomNode = GeomNode('field')
+		fieldGeomNode.addGeom(points)
 		self.fieldGeomNP = render.attachNewNode(fieldGeomNode)
 		#self.fieldTS = TextureStage('fieldTS')
 		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual) #thanks @squiggle 
 		#self.fieldGeomNP.set_tex_gen(self.fieldTS, TexGenAttrib.M_point_sprite)
-		#self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
+		self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
 		#self.fieldGeomNP.setRenderModePerspective(1)
-		#self.fieldGeomNP.setRenderModeThickness(50.)
+		self.fieldGeomNP.setRenderModeThickness(50.)
 		#self.fieldGeomNP.set_tex_scale(self.fieldTS, 2.)
-		#self.fieldGeomNP.set_tex_scale(TextureStage.getDefault(), 2.)
+		self.fieldGeomNP.set_tex_scale(TextureStage.getDefault(), 2.)
 		#self.fieldGeomNP.set_tex_offset(self.fieldTS,-1.)
-		#self.fieldGeomNP.set_tex_offset(TextureStage.getDefault(),1.)
+		self.fieldGeomNP.set_tex_offset(TextureStage.getDefault(),1.)
 
 		self.accept("arrow_left", self.move, ["left"])
 		self.accept("arrow_right", self.move, ["right"])
@@ -114,8 +131,8 @@ class WaveSim(ShowBase):
 	def update(self, task):
 		self.t += 0.001
 
-		self.cam.setPos(self.globalScale/2. + 40. * -sin(self.t*1.),self.globalScale/2. + 40. * cos(self.t*1.),.5*self.globalScale+sin(self.t))
-		self.cam.lookAt(self.globalScale/2.,self.globalScale/2.,self.globalScale/2.)
+		self.cam.setPos(self.scale/2. + 40. * -sin(self.t*1.),self.scale/2. + 40. * cos(self.t*1.),.5*self.scale+sin(self.t))
+		self.cam.lookAt(self.scale/2.,self.scale/2.,self.scale/2.)
 
 		return task.cont
 
@@ -134,8 +151,8 @@ class WaveSim(ShowBase):
 app = WaveSim()
 
 shader = Shader.load(Shader.SL_GLSL,
-                     vertex="simplevert.vert",
-                     fragment="simplefrag.frag")
+                     vertex="wavesim-test4-vert.vert",
+                     fragment="wavesim-test4-frag.frag")
 render.setShader(shader)
 render.setShaderInput(ShaderInput('sys_scale',sys_scale))
 

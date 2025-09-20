@@ -2,7 +2,7 @@
 // test script that changes the colour of the point
 
 // pass value into shader from main code
-//uniform vec2 resolution;
+uniform vec2 resolution;
 //mediump vec2 gl_PointCoord; //fragment position within a point (point rasterization only) 
 
 //uniform sampler2D p3d_Texture0;
@@ -26,5 +26,6 @@ void main() {
 	p3d_FragColor = vec4(col.x - uvDist, 
 						 col.y - uvDist, 
 						 col.z - uvDist,
-						 col.w - uvDist);//(col.x + col.y + col.z)/3. - uvDist);
+						 //(col.x + col.y + col.z)/3. - uvDist);
+						col.w - uvDist);
 }
