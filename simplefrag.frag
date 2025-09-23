@@ -26,5 +26,8 @@ void main() {
 	p3d_FragColor = vec4(col.x - uvDist, 
 						 col.y - uvDist, 
 						 col.z - uvDist,
-						 col.w - uvDist);//(col.x + col.y + col.z)/3. - uvDist);
+						 //col.w - uvDist);
+						(col.x + col.y + col.z)/3. - uvDist);
+	
+	//p3d_FragColor = vec4(1.,1.,1.,1.);
 }

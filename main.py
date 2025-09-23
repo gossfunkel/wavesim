@@ -1,8 +1,9 @@
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import Shader, ShaderInput, ShaderBuffer, loadPrcFileData
+from panda3d.core import Shader, ShaderInput, ShaderBuffer, ComputeNode, loadPrcFileData
 from panda3d.core import Geom, GeomNode, GeomEnums, GeomTriangles, GeomVertexArrayFormat, GeomVertexFormat, GeomVertexData
-from panda3d.core import TextureStage, TexGenAttrib, TransparencyAttrib, LVecBase3f, BoundingBox
+from panda3d.core import TextureStage, TexGenAttrib, TransparencyAttrib, LVecBase3f, BoundingBox, BoundingVolume
 from math import sin, cos
+from array import array
 #import numpy as np
 #import type
 
@@ -17,7 +18,7 @@ pstats-tasks 1
 loadPrcFileData("", config_vars)
 
 sys_scale = 30.0
-quadSize = 1.0
+triSize = 1.0
 #spriteNum = 25
 
 col = {
@@ -52,17 +53,18 @@ class WaveSim(ShowBase):
 		self.globalScale = int(sys_scale)
 		self.scale3d = int(self.globalScale*self.globalScale*self.globalScale)
 
-		self.set_background_color(0.,0.,0.,1.)
-		self.cam.setPos(15.,-50.,11.)
+		self.set_background_color(0.5,0.5,0.5,1.)
+		self.cam.setPos(15.,-80.,11.)
 
 		# DEFINE GRAPH OF QUADS
 		floats = []
-		for j in range(self.globalScale):
-			for i in range(self.globalScale*self.globalScale):
-				floats += 	[float(i%self.globalScale),float(j%self.globalScale),float(i/self.globalScale),
-								float(i%self.globalScale),float(j%self.globalScale)-1,float(i/self.globalScale),
-								1.,1.,1.,1.,
-								(quadSize)
+		for i in range(self.globalScale):
+			for j in range(self.globalScale):
+				for k in range(self.globalScale):
+					floats += 	[float(i%self.globalScale),float(j%self.globalScale),float(k%self.globalScale),
+								float(i%self.globalScale),float(j%self.globalScale)-1,float(k%self.globalScale),
+								0.,0.,0.,0.,
+								(triSize)
 							]
 
 		initial_data = array('f', floats)
@@ -71,34 +73,50 @@ class WaveSim(ShowBase):
 		vertexFormat = GeomVertexFormat.get_empty()
 		# populate vertex array with rows for each vertex (point in field)
 		vdata = GeomVertexData('dataPoints', vertexFormat, Geom.UHStatic)
-		vdata.setNumRows(self.scale3d*4)
+		vdata.setNumRows(self.scale3d*3)
 		#vdata.setNumRows(spriteNum)
+
+		# create geometry node for field
+		fieldGeomNode = GeomNode('fieldNode')
+		quads = []
 
 		# This represents a draw call, indicating how many vertices we want to draw.
 		triPrims = GeomTriangles(GeomEnums.UH_static)
 		triPrims.add_next_vertices(self.scale3d * 3)
-		#triPrims.addConsecutiveVertices(0, self.scale3d)
+		triPrims.closePrimitive()
 
 		geometry = Geom(vdata)
 		geometry.addPrimitive(triPrims)
-		geometry.set_bounds(BoundingBox((0, 0, 0), (1, 1, 1))) # We need to set a bounding volume so that Panda doesn't try to cull it.
-		triPrims.closePrimitive()
-
-		# create geometry node for field
-		fieldGeomNode = GeomNode('fieldNode')
-		fieldGeomNode.addGeom(geometry)
+		geometry.set_bounds(BoundingBox((0, 0, 0), (self.globalScale, self.globalScale, self.globalScale))) # We need to set a bounding volume so that Panda doesn't try to cull it.
 		
+		fieldGeomNode.addGeom(geometry)
+
+		self.shader = Shader.load(Shader.SL_GLSL,
+                     vertex="simplevert.vert",
+                     fragment="simplefrag.frag")
 		self.fieldGeomNP = render.attachNewNode(fieldGeomNode)
 		#self.fieldTS = TextureStage('fieldTS')
-		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual) #thanks @squiggle 
-		#self.fieldGeomNP.set_tex_gen(self.fieldTS, TexGenAttrib.M_point_sprite)
-		#self.fieldGeomNP.set_tex_gen(TextureStage.getDefault(), TexGenAttrib.M_point_sprite)
-		#self.fieldGeomNP.setRenderModePerspective(1)
-		#self.fieldGeomNP.setRenderModeThickness(50.)
-		#self.fieldGeomNP.set_tex_scale(self.fieldTS, 2.)
-		#self.fieldGeomNP.set_tex_scale(TextureStage.getDefault(), 2.)
-		#self.fieldGeomNP.set_tex_offset(self.fieldTS,-1.)
-		#self.fieldGeomNP.set_tex_offset(TextureStage.getDefault(),1.)
+		self.fieldGeomNP.setShader(self.shader)
+		self.fieldGeomNP.setShaderInput(ShaderInput('sys_scale',sys_scale))
+		self.fieldGeomNP.setShaderInput("DataPointBuffer", buffer)
+		self.fieldGeomNP.set_two_sided(True)
+		#self.fieldGeomNP.set_depth_write(False)
+		self.fieldGeomNP.node().set_bounds_type(BoundingVolume.BT_box)
+		#self.fieldGeomNP.show_bounds()
+
+		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual)
+
+		# Compute node
+		self.computeNode = ComputeNode("waveSim")
+		self.computeNode.add_dispatch(self.scale3d // 16, 1, 1)
+		self.computeNP = render.attachNewNode(self.computeNode)
+		self.computeNP.set_shader(Shader.load_compute(Shader.SL_GLSL, "waveSim.comp"))
+		self.computeNP.set_shader_input("sys_scale", self.scale3d)
+		self.computeNP.set_shader_input("DataPointBuffer", buffer)
+		#self.computeNP.set_shader_input("n", self.qn_n)
+		#self.computeNP.set_shader_input("l", self.qn_l)
+		#self.computeNP.set_shader_input("ml", self.qn_ml)
+		#self.computeNP.set_shader_input("ms", self.qn_s)
 
 		self.accept("arrow_left", self.move, ["left"])
 		self.accept("arrow_right", self.move, ["right"])
@@ -114,7 +132,7 @@ class WaveSim(ShowBase):
 	def update(self, task):
 		self.t += 0.001
 
-		self.cam.setPos(self.globalScale/2. + 40. * -sin(self.t*1.),self.globalScale/2. + 40. * cos(self.t*1.),.5*self.globalScale+sin(self.t))
+		self.cam.setPos(self.globalScale/2. + 80. * -sin(self.t*1.),self.globalScale/2. + 80. * cos(self.t*1.),.5*self.globalScale+sin(self.t))
 		self.cam.lookAt(self.globalScale/2.,self.globalScale/2.,self.globalScale/2.)
 
 		return task.cont
@@ -132,11 +150,5 @@ class WaveSim(ShowBase):
 			self.cam.setY(self.cam.getY()-1.)
 
 app = WaveSim()
-
-shader = Shader.load(Shader.SL_GLSL,
-                     vertex="simplevert.vert",
-                     fragment="simplefrag.frag")
-render.setShader(shader)
-render.setShaderInput(ShaderInput('sys_scale',sys_scale))
 
 app.run()

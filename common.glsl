@@ -5,8 +5,8 @@ struct DataPoint {
 	vec3 normal;
 	vec4 col;
 	float size;
-}
+};
 
-layout(std450) buffer DataPointBuffer {
+layout(std430) buffer DataPointBuffer {
 	DataPoint dataPoints[];
-}
+};

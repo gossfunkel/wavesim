@@ -2,7 +2,7 @@
 
 uniform float sys_scale;
 
-layout (local_size_x = sys_scale, local_size_y = sys_scale) in;
+layout (local_size_x = 16, local_size_y = 1, local_size_z = 1) in;
 
 #pragma include "common.glsl"
 
@@ -85,13 +85,16 @@ void main() {
 	vec4 col = vec4(((4*pointPhase - .5)-(4*pointPhase - .5)*(4*pointPhase - .5))+1., 
 				((4*pointPhase - 1.5)-(4*pointPhase - 1.5)*(4*pointPhase - 1.5))+1.,
 				((4*pointPhase - 2.5)-(4*pointPhase - 2.5)*(4*pointPhase - 2.5))+1.,
-				radPosComp * scale); // set transparency equal to the absolute value of the radial func, product with the scale
+				radPosComp * dataPoints[dataPointId].size); // set transparency equal to the absolute value of the radial func, product with the scale
 	vec4 colInv = vec4(((4*pointPhaseInv - .5)-(4*pointPhaseInv - .5)*(4*pointPhaseInv - .5))+1., 
 				((4*pointPhaseInv - 1.5)-(4*pointPhaseInv - 1.5)*(4*pointPhaseInv - 1.5))+1.,
 				((4*pointPhaseInv - 2.5)-(4*pointPhaseInv - 2.5)*(4*pointPhaseInv - 2.5))+1.,
-				radNegComp * scale); 
-	dataPoints[dataPointId].col.x = col.x * radPosComp + colInv.x * radNegComp;
-	dataPoints[dataPointId].col.y = col.y * radPosComp + colInv.y * radNegComp;
-	dataPoints[dataPointId].col.z = col.z * radPosComp + colInv.z * radNegComp;
+				radNegComp * dataPoints[dataPointId].size); 
+	//dataPoints[dataPointId].col.x = col.x * radPosComp + colInv.x * radNegComp;
+	//dataPoints[dataPointId].col.y = col.y * radPosComp + colInv.y * radNegComp;
+	//dataPoints[dataPointId].col.z = col.z * radPosComp + colInv.z * radNegComp;
+	dataPoints[dataPointId].col.x = 1;
+	dataPoints[dataPointId].col.y = 1;
+	dataPoints[dataPointId].col.z = 1;
 
 }
