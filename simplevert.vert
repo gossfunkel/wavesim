@@ -31,8 +31,9 @@ void main() {
 
 	col = dataPoints[dataPointId].col;
 
-	vec4 pos = p3d_ModelViewMatrix * vec4(dataPoints[dataPointId].pos, 1);
+	vec4 pos = p3d_ModelViewMatrix * vec4(dataPoints[dataPointId].pos, 1.);
 	// i should transform the normal vector into view-space coordinates, somehow
+	// vec4(dataPoints[dataPointId].normal, 1.)
 	//vec4 pos = p3d_ModelViewMatrix * vec4(dataPoints[dataPointId].pos, 1);
 
 	if (vtxid == 0) {
@@ -40,7 +41,7 @@ void main() {
 		texcoord = vec2(0., -1.);
 	} else if (vtxid == 1) {
 		pos.x -= 0.1 * dataPoints[dataPointId].size;
-		texcoord = vec2(-3., 1.5);
+		texcoord = vec2(-2., 1.5);
 	} else if (vtxid == 2) {
 		pos.x += 0.1 * dataPoints[dataPointId].size;
 		texcoord = vec2(4., 1.5);

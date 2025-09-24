@@ -51,21 +51,27 @@ class WaveSim(ShowBase):
 
 		#global sys_scale
 		self.globalScale = int(sys_scale)
+		#print(self.globalScale)
 		self.scale3d = int(self.globalScale*self.globalScale*self.globalScale)
 
 		self.set_background_color(0.5,0.5,0.5,1.)
-		self.cam.setPos(15.,-80.,11.)
+		self.cam.setPos(5.,-10.,5.)
 
 		# DEFINE GRAPH OF QUADS
 		floats = []
-		for i in range(self.globalScale):
-			for j in range(self.globalScale):
-				for k in range(self.globalScale):
-					floats += 	[float(i%self.globalScale),float(j%self.globalScale),float(k%self.globalScale),
-								float(i%self.globalScale),float(j%self.globalScale)-1,float(k%self.globalScale),
-								0.,0.,0.,0.,
-								(triSize)
+		for i in range(int(self.globalScale)):
+			for j in range(int(self.globalScale)):
+				for k in range(int(self.globalScale)):
+					#print("i: " + str(i) + ", j: " + str(j) + ", k: " + str(k))
+					#floats += 	[float((i+1)/self.globalScale),float((j+1)/self.globalScale),float((k+1)/self.globalScale),
+					#			float((i+1)/self.globalScale),float((j+1)/self.globalScale)-1,float((k+1)/self.globalScale),
+					#for _ in range(3):
+					floats += 	[float(i+1),float(j+1),float(k+1), 		# pos 		vec3
+								0.,-1.,0, 	# normal	vec3
+								0.,0.,0.,0.,							# col 		vec4
+								float(triSize)							# size 		float
 							]
+		#print(floats)
 
 		initial_data = array('f', floats)
 		buffer = ShaderBuffer('dataPoints', initial_data.tobytes(), GeomEnums.UH_static)
@@ -73,7 +79,7 @@ class WaveSim(ShowBase):
 		vertexFormat = GeomVertexFormat.get_empty()
 		# populate vertex array with rows for each vertex (point in field)
 		vdata = GeomVertexData('dataPoints', vertexFormat, Geom.UHStatic)
-		vdata.setNumRows(self.scale3d*3)
+		vdata.setNumRows(self.scale3d * 3) # three vertices per point
 		#vdata.setNumRows(spriteNum)
 
 		# create geometry node for field
@@ -82,7 +88,7 @@ class WaveSim(ShowBase):
 
 		# This represents a draw call, indicating how many vertices we want to draw.
 		triPrims = GeomTriangles(GeomEnums.UH_static)
-		triPrims.add_next_vertices(self.scale3d * 3)
+		triPrims.add_next_vertices(self.scale3d * 3) # three vertices per point
 		triPrims.closePrimitive()
 
 		geometry = Geom(vdata)
@@ -132,7 +138,7 @@ class WaveSim(ShowBase):
 	def update(self, task):
 		self.t += 0.001
 
-		self.cam.setPos(self.globalScale/2. + 80. * -sin(self.t*1.),self.globalScale/2. + 80. * cos(self.t*1.),.5*self.globalScale+sin(self.t))
+		self.cam.setPos(self.globalScale/2. + 60. * -sin(self.t*1.),self.globalScale/2. + 60. * cos(self.t*1.),self.globalScale/2. - 5. * sin(self.t))
 		self.cam.lookAt(self.globalScale/2.,self.globalScale/2.,self.globalScale/2.)
 
 		return task.cont

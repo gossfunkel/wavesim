@@ -30,7 +30,7 @@ const float eightOver27rt6 = 8. / (27 * sqrt(6.));
 const float fourOver81rt30 = 4. / (81 * sqrt(30.));
 float numConstants[6]; // index numerical constants to array (must be populated at runtime)
 
-float sphericalHarmonic (vec3 r, float phase, float dist, int l, int m) { 
+float sphericalHarmonic (vec3 r, float phase, float dist, uint l, int m) { 
 	return phase/360 + pow(piConstants[3],min(max(l-1,0),1)) * piConstants[l] 
 					* (pow(r.x,clamp(max(m,0),0,1)+clamp(-1-m,0,1)) 
 					* pow(r.y,clamp(-1 * min(m,0),0,1))
@@ -39,15 +39,15 @@ float sphericalHarmonic (vec3 r, float phase, float dist, int l, int m) {
 					- (dist*dist*max(clamp(max(l-1,0),0,1) - clamp(m*m,0,1),0)) )/pow(dist,l);
 }
 
-float radial (float r, int n, int l) {
+float radial (float r, uint n, uint l) {
 	return pow(4-n,4) * (numConstants[n-1 + max(n-2,0)] 
 				* (1/pow(r,(n-1)-l) - ((n-1)-l)/(n* (n-1) * pow(r,(n-2) + l)) + (n-1)/(n*n*pow(r,n-3))) 
 				* pow(r,n-1) * exp((-1. * r)/n));
 }
 
 void main() {
-	int n = 3; // n is a whole number, and tells us the energy level of the function
-	int l = 2; // l is a natural number < n, and tells us the geometry of the function
+	uint n = 3; // n is a whole number, and tells us the energy level of the function
+	uint l = 2; // l is a natural number < n, and tells us the geometry of the function
 	int m = 0; // |m| <= l, and tells us which configuration of the function this is
 	// quantum number ms is not handled here. What do you expect of me?!?
 
@@ -96,5 +96,6 @@ void main() {
 	dataPoints[dataPointId].col.x = 1;
 	dataPoints[dataPointId].col.y = 1;
 	dataPoints[dataPointId].col.z = 1;
+	dataPoints[dataPointId].col.w = 1;
 
 }
