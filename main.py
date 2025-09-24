@@ -18,7 +18,7 @@ pstats-tasks 1
 loadPrcFileData("", config_vars)
 
 sys_scale = 30.0
-triSize = 1.0
+triSize = 10.0
 #spriteNum = 25
 
 col = {
@@ -58,6 +58,7 @@ class WaveSim(ShowBase):
 		self.cam.setPos(5.,-10.,5.)
 
 		# DEFINE GRAPH OF QUADS
+		#floats = np.empty(self.scale3d*11, dtype='f')
 		floats = []
 		for i in range(int(self.globalScale)):
 			for j in range(int(self.globalScale)):
@@ -66,15 +67,17 @@ class WaveSim(ShowBase):
 					#floats += 	[float((i+1)/self.globalScale),float((j+1)/self.globalScale),float((k+1)/self.globalScale),
 					#			float((i+1)/self.globalScale),float((j+1)/self.globalScale)-1,float((k+1)/self.globalScale),
 					#for _ in range(3):
-					floats += 	[float(i+1),float(j+1),float(k+1), 		# pos 		vec3
-								0.,-1.,0, 	# normal	vec3
-								0.,0.,0.,0.,							# col 		vec4
-								float(triSize)							# size 		float
+					#floats[i+j+k:i+j+k+11] = [float(i+1),float(j+1),float(k+1), 1.,# pos 		vec4
+					floats += [float(i+1),float(j+1),float(k+1), 1.,	# pos 		vec4
+								0.,-1.,0, 								# normal	vec3
+								float(triSize),							# size 		float
+								0.,0.,0.,0.								# col 		vec4
 							]
 		#print(floats)
 
 		initial_data = array('f', floats)
 		buffer = ShaderBuffer('dataPoints', initial_data.tobytes(), GeomEnums.UH_static)
+		#buffer = ShaderBuffer('dataPoints', floats.tobytes(), GeomEnums.UH_static)
 
 		vertexFormat = GeomVertexFormat.get_empty()
 		# populate vertex array with rows for each vertex (point in field)

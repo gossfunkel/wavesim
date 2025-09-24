@@ -65,7 +65,7 @@ void main() {
 
 	uint dataPointId = gl_GlobalInvocationID.x;
 
-	vec3 pos = dataPoints[dataPointId].pos;
+	vec3 pos = dataPoints[dataPointId].pos.xyz;
 
 	// n.b. this is only required due to the coordinate system; if the origin was at the centre, we would not need this
 	vec3 r = vec3(pos.x-sys_scale/2,pos.y-sys_scale/2,pos.z-sys_scale/2);
