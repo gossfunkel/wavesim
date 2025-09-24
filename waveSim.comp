@@ -1,14 +1,13 @@
 #version 430
 
-uniform float sys_scale;
-
 layout (local_size_x = 16, local_size_y = 1, local_size_z = 1) in;
 
 #pragma include "common.glsl"
 
 //uniform float osg_FrameTime;
 //uniform float osg_DeltaFrameTime;
-uniform int osg_FrameNumber;
+uniform float osg_FrameTime;
+uniform float sys_scale;
 
 //in vec4 p3d_Color; // SSBO used instead of these shader inputs
 //in float scale;
@@ -45,9 +44,15 @@ float radial (float r, uint n, uint l) {
 				* pow(r,n-1) * exp((-1. * r)/n));
 }
 
+/*vec3 colourSpectrum (float val) {
+	return vec3(R,
+				G,
+				B);
+}*/
+
 void main() {
-	uint n = 3; // n is a whole number, and tells us the energy level of the function
-	uint l = 2; // l is a natural number < n, and tells us the geometry of the function
+	uint n = 1; // n is a whole number, and tells us the energy level of the function
+	uint l = 0; // l is a natural number < n, and tells us the geometry of the function
 	int m = 0; // |m| <= l, and tells us which configuration of the function this is
 	// quantum number ms is not handled here. What do you expect of me?!?
 
@@ -66,36 +71,37 @@ void main() {
 	uint dataPointId = gl_GlobalInvocationID.x;
 
 	vec3 pos = dataPoints[dataPointId].pos.xyz;
+	float size = dataPoints[dataPointId].size;
 
 	// n.b. this is only required due to the coordinate system; if the origin was at the centre, we would not need this
 	vec3 r = vec3(pos.x-sys_scale/2,pos.y-sys_scale/2,pos.z-sys_scale/2);
 	vec3 midpoint = vec3(sys_scale/2,sys_scale/2,sys_scale/2);
 	float dist = sqrt(r.x*r.x + r.y*r.y + r.z*r.z);
 
-	float frameNum = float(osg_FrameNumber)/4.;// * osg_DeltaFrameTime;
+	float frameNum = float(osg_FrameTime)/4.;// * osg_DeltaFrameTime;
 	//float frameNum = 0.;
 
-	float pointPhase = sphericalHarmonic(r, mod(frameNum,360.), dist, l, m);
-	float pointPhaseInv = sphericalHarmonic(r, mod(frameNum+180.,360.), dist, l, m);
-	float radialVal = clamp(radial(dist, n, l),-1.,1.);
+	//float pointVal = sphericalHarmonic(r, mod(frameNum,360.), dist, l, m);
+	float pointVal = fract(.25+.25*abs(sin(frameNum)));
+	//float pointValInv = sphericalHarmonic(r, mod(frameNum+180.,360.), dist, l, m);
+	float pointValInv = cos(1. + frameNum);
+	//float radialVal = 4*clamp(radial(dist, n, l),-1.,1.);
+	float radialVal = 1;
 
 	float radPosComp = max(radialVal, 0.);
 	float radNegComp = -1 * min(radialVal, 0.);
 
-	vec4 col = vec4(((4*pointPhase - .5)-(4*pointPhase - .5)*(4*pointPhase - .5))+1., 
-				((4*pointPhase - 1.5)-(4*pointPhase - 1.5)*(4*pointPhase - 1.5))+1.,
-				((4*pointPhase - 2.5)-(4*pointPhase - 2.5)*(4*pointPhase - 2.5))+1.,
-				radPosComp * dataPoints[dataPointId].size); // set transparency equal to the absolute value of the radial func, product with the scale
-	vec4 colInv = vec4(((4*pointPhaseInv - .5)-(4*pointPhaseInv - .5)*(4*pointPhaseInv - .5))+1., 
-				((4*pointPhaseInv - 1.5)-(4*pointPhaseInv - 1.5)*(4*pointPhaseInv - 1.5))+1.,
-				((4*pointPhaseInv - 2.5)-(4*pointPhaseInv - 2.5)*(4*pointPhaseInv - 2.5))+1.,
-				radNegComp * dataPoints[dataPointId].size); 
-	//dataPoints[dataPointId].col.x = col.x * radPosComp + colInv.x * radNegComp;
-	//dataPoints[dataPointId].col.y = col.y * radPosComp + colInv.y * radNegComp;
-	//dataPoints[dataPointId].col.z = col.z * radPosComp + colInv.z * radNegComp;
-	dataPoints[dataPointId].col.x = 1;
-	dataPoints[dataPointId].col.y = 1;
-	dataPoints[dataPointId].col.z = 1;
-	dataPoints[dataPointId].col.w = 1;
+	vec4 col = vec4(((4*pointVal - .5)-(4*pointVal - .5)*(4*pointVal - .5))+1., 
+				((4*pointVal - 1.5)-(4*pointVal - 1.5)*(4*pointVal - 1.5))+1.,
+				((4*pointVal - 2.5)-(4*pointVal - 2.5)*(4*pointVal - 2.5))+1.,
+				radialVal * size); // set transparency equal to the absolute value of the radial func, product with the scale
+	col.x = col.x * radPosComp + radNegComp * (((4*pointValInv - .5 ) - (4*pointValInv - .5 ) * (4*pointValInv - .5 )) +1.); 
+	col.y = col.y * radPosComp + radNegComp * (((4*pointValInv - 1.5) - (4*pointValInv - 1.5) * (4*pointValInv - 1.5)) +1.),
+	col.z = col.z * radPosComp + radNegComp * (((4*pointValInv - 2.5) - (4*pointValInv - 2.5) * (4*pointValInv - 2.5)) +1.),
+	dataPoints[dataPointId].col = col;
+	//dataPoints[dataPointId].col.x = 1;
+	//dataPoints[dataPointId].col.y = 1;
+	//dataPoints[dataPointId].col.z = 1;
+	//dataPoints[dataPointId].col.w = 1;
 
 }

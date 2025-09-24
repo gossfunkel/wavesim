@@ -4,7 +4,7 @@ from panda3d.core import Geom, GeomNode, GeomEnums, GeomTriangles, GeomVertexArr
 from panda3d.core import TextureStage, TexGenAttrib, TransparencyAttrib, LVecBase3f, BoundingBox, BoundingVolume
 from math import sin, cos
 from array import array
-#import numpy as np
+import numpy as np
 #import type
 
 config_vars = """
@@ -14,6 +14,7 @@ hardware-animated-vertices true
 sync-video false
 want-pstats 1
 pstats-tasks 1 
+gl-debug 1
 """
 loadPrcFileData("", config_vars)
 
@@ -96,7 +97,8 @@ class WaveSim(ShowBase):
 
 		geometry = Geom(vdata)
 		geometry.addPrimitive(triPrims)
-		geometry.set_bounds(BoundingBox((0, 0, 0), (self.globalScale, self.globalScale, self.globalScale))) # We need to set a bounding volume so that Panda doesn't try to cull it.
+		# setting a padded bounding volume so that Panda doesn't try to cull it (rdb):
+		geometry.set_bounds(BoundingBox((-1, -1, -1), (self.globalScale+1, self.globalScale+1, self.globalScale+1))) 
 		
 		fieldGeomNode.addGeom(geometry)
 
@@ -111,7 +113,7 @@ class WaveSim(ShowBase):
 		self.fieldGeomNP.set_two_sided(True)
 		#self.fieldGeomNP.set_depth_write(False)
 		self.fieldGeomNP.node().set_bounds_type(BoundingVolume.BT_box)
-		#self.fieldGeomNP.show_bounds()
+		self.fieldGeomNP.show_bounds()
 
 		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual)
 
