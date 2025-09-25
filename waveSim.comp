@@ -44,11 +44,11 @@ float radial (float r, uint n, uint l) {
 				* pow(r,n-1) * exp((-1. * r)/n));
 }
 
-/*vec3 colourSpectrum (float val) {
-	return vec3(R,
-				G,
-				B);
-}*/
+vec3 colourSpectrum (float val) { // the following equations are triangle waves with amplitudes and periods of 1
+	return vec3(4. * abs(mod(val - (4*pi/3)/4,1.) - 1/2) - 1.,
+				4. * abs(mod(val - 1/4,1.) - 1/2)-1.,
+				4. * abs(mod(val - (2*pi/3)/4,1.) - 1/2) - 1.);
+}
 
 void main() {
 	uint n = 1; // n is a whole number, and tells us the energy level of the function
@@ -78,30 +78,31 @@ void main() {
 	vec3 midpoint = vec3(sys_scale/2,sys_scale/2,sys_scale/2);
 	float dist = sqrt(r.x*r.x + r.y*r.y + r.z*r.z);
 
-	float frameNum = float(osg_FrameTime)/4.;// * osg_DeltaFrameTime;
+	float frameNum = float(osg_FrameTime)/10.;// * osg_DeltaFrameTime;
 	//float frameNum = 0.;
 
 	//float pointVal = sphericalHarmonic(r, mod(frameNum,360.), dist, l, m);
-	float pointVal = fract(.25+.25*abs(sin(frameNum)));
+	float pointVal = fract(.5+sin(frameNum)/2. - cos(dist));
 	//float pointValInv = sphericalHarmonic(r, mod(frameNum+180.,360.), dist, l, m);
-	float pointValInv = cos(1. + frameNum);
+	float pointValInv = .5 + cos(frameNum)/2.;
 	//float radialVal = 4*clamp(radial(dist, n, l),-1.,1.);
-	float radialVal = 1;
+	float radialVal = 1.;
+
+	//dataPoints[dataPointId].col = vec4(colourSpectrum(pointVal), radialVal * min(size,1.));
 
 	float radPosComp = max(radialVal, 0.);
 	float radNegComp = -1 * min(radialVal, 0.);
+	//vec4 col = vec4(pointVal, pointValInv, pointVal*pointValInv, 1.);
+	vec4 col = vec4(1.,1.,1.,1.);
 
-	vec4 col = vec4(((4*pointVal - .5)-(4*pointVal - .5)*(4*pointVal - .5))+1., 
+	/*vec4 col = vec4(((4*pointVal - .5)-(4*pointVal - .5)*(4*pointVal - .5))+1., 
 				((4*pointVal - 1.5)-(4*pointVal - 1.5)*(4*pointVal - 1.5))+1.,
 				((4*pointVal - 2.5)-(4*pointVal - 2.5)*(4*pointVal - 2.5))+1.,
 				radialVal * size); // set transparency equal to the absolute value of the radial func, product with the scale
-	col.x = col.x * radPosComp + radNegComp * (((4*pointValInv - .5 ) - (4*pointValInv - .5 ) * (4*pointValInv - .5 )) +1.); 
+				*/
+	/*col.x = col.x * radPosComp + radNegComp * (((4*pointValInv - .5 ) - (4*pointValInv - .5 ) * (4*pointValInv - .5 )) +1.); 
 	col.y = col.y * radPosComp + radNegComp * (((4*pointValInv - 1.5) - (4*pointValInv - 1.5) * (4*pointValInv - 1.5)) +1.),
-	col.z = col.z * radPosComp + radNegComp * (((4*pointValInv - 2.5) - (4*pointValInv - 2.5) * (4*pointValInv - 2.5)) +1.),
+	col.z = col.z * radPosComp + radNegComp * (((4*pointValInv - 2.5) - (4*pointValInv - 2.5) * (4*pointValInv - 2.5)) +1.),*/
 	dataPoints[dataPointId].col = col;
-	//dataPoints[dataPointId].col.x = 1;
-	//dataPoints[dataPointId].col.y = 1;
-	//dataPoints[dataPointId].col.z = 1;
-	//dataPoints[dataPointId].col.w = 1;
 
 }

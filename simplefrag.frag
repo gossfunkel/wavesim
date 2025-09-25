@@ -18,14 +18,14 @@ out vec4 p3d_FragColor;
 void main() {
 	// fade out colour from centre
 	// uv = (2. * resolution.x)/2. + resolution.y or something idk
-	float uvDist = pow(sqrt(abs((.5-texcoord.x)*(.5-texcoord.x)) + abs((.5-texcoord.y)*(.5-texcoord.y))),1.)/2.;
+	float uvDist = pow(sqrt(abs((.5-texcoord.x)*(.5-texcoord.x)) + abs((.5-texcoord.y)*(.5-texcoord.y))),1.);
 	//vec2 uv = vec2((texcoord.x+.5)*(texcoord.x+.5)*(texcoord.x+.5)*(texcoord.x+.5),(texcoord.y+.5)*(texcoord.y+.5)*(texcoord.y+.5)*(texcoord.y+.5));
 	//p3d_FragColor = vec4(col.x - uvDist, col.y - uvDist, col.z - uvDist,(col.x + col.y + col.z)/3. - uvDist);
 
 	// todo: normalise colour values so that FF0000 and FFFF00 are the same size
-	p3d_FragColor = vec4(col.x - uvDist, 
-						 col.y - uvDist, 
-						 col.z - uvDist,
+	p3d_FragColor = vec4(col.x, 
+						 col.y, 
+						 col.z,
 						 //1.);
 						 //col.w - uvDist);
 						 (col.x + col.y + col.z)/3. - uvDist);

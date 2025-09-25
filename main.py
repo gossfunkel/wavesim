@@ -9,17 +9,19 @@ import numpy as np
 
 config_vars = """
 win-size 1920 1000
-show-frame-rate-meter 1
-hardware-animated-vertices true
-sync-video false
+hardware-animated-vertices 1
+gl-version 3 2
+sync-video 0
 want-pstats 1
+pstats-gpu-timing 1
 pstats-tasks 1 
 gl-debug 1
+show-frame-rate-meter 1
 """
 loadPrcFileData("", config_vars)
 
-sys_scale = 30.0
-triSize = 10.0
+sys_scale = 50.0
+triSize = 8.0
 #spriteNum = 25
 
 col = {
@@ -69,10 +71,10 @@ class WaveSim(ShowBase):
 					#			float((i+1)/self.globalScale),float((j+1)/self.globalScale)-1,float((k+1)/self.globalScale),
 					#for _ in range(3):
 					#floats[i+j+k:i+j+k+11] = [float(i+1),float(j+1),float(k+1), 1.,# pos 		vec4
-					floats += [float(i+1),float(j+1),float(k+1), 1.,	# pos 		vec4
-								0.,-1.,0, 								# normal	vec3
-								float(triSize),							# size 		float
-								0.,0.,0.,0.								# col 		vec4
+					floats += [float((i+1)/2),float((j+1)/2),float((k+1)/2), 1.,	# pos 		vec4
+								0.,-1.,0, 											# normal	vec3
+								float(triSize),										# size 		float
+								0.,0.,0.,0.											# col 		vec4
 							]
 		#print(floats)
 
@@ -113,7 +115,7 @@ class WaveSim(ShowBase):
 		self.fieldGeomNP.set_two_sided(True)
 		#self.fieldGeomNP.set_depth_write(False)
 		self.fieldGeomNP.node().set_bounds_type(BoundingVolume.BT_box)
-		self.fieldGeomNP.show_bounds()
+		#self.fieldGeomNP.show_bounds()
 
 		self.fieldGeomNP.setTransparency(TransparencyAttrib.MDual)
 
@@ -143,8 +145,8 @@ class WaveSim(ShowBase):
 	def update(self, task):
 		self.t += 0.001
 
-		self.cam.setPos(self.globalScale/2. + 60. * -sin(self.t*1.),self.globalScale/2. + 60. * cos(self.t*1.),self.globalScale/2. - 5. * sin(self.t))
-		self.cam.lookAt(self.globalScale/2.,self.globalScale/2.,self.globalScale/2.)
+		self.cam.setPos(self.globalScale/2. + 80. * -sin(self.t*1.),self.globalScale/2. + 80. * cos(self.t*1.),self.globalScale/4. - 5. * sin(self.t))
+		self.cam.lookAt(self.globalScale/4.,self.globalScale/4.,self.globalScale/4.)
 
 		return task.cont
 
