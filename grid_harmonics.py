@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     base.win.set_clear_color_active(True)
 
-    base.cam.set_pos(20., -10., 1.5)
+    base.cam.set_pos(16., -10., 1.5)
     base.cam.set_hpr(0.,-5.,0.)
     #base.cam.look_at(sprite_np)
 
