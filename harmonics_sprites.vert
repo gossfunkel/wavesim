@@ -19,13 +19,13 @@ void main() {
 
     vec4 posn = p3d_ModelViewMatrix * vec4(pos[sprite_idx], 1.);
     if (corner_idx == 0) { // middle bottom
-        posn.y -= .4 ;
+        posn.y -= .3 ;
         texcoord = vec2(.5, -.5);
     } else if (corner_idx == 1) { // top left
-        posn.x -= .4;
+        posn.x -= .3;
         texcoord = vec2(-.9, 1.);
     } else { // top right
-        posn.x += .4;
+        posn.x += .3;
         texcoord = vec2(1.9, 1.);
     }
 
