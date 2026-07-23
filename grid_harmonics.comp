@@ -14,7 +14,7 @@ layout (std430, binding = 0) buffer sprite_buff {
 void main() {
     uint sprite_id = 16 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y;
 
-    pos[sprite_id].z = 2.*sin(osg_FrameTime*TAU) * 
-                        sin(2.*((pos[sprite_id].y/(num_sprites/16.))-1.)*TAU) *
-                        sin(((pos[sprite_id].x/16.)-1.)*TAU);
+    pos[sprite_id].z = 2.*sin(osg_FrameTime*TAU/2.) * 
+                        sin(4.*((pos[sprite_id].y/(num_sprites/16.))-1.)*TAU) *
+                        sin(.5*((pos[sprite_id].x/16.)-1.)*TAU);
 }

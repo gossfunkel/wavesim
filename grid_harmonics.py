@@ -8,7 +8,7 @@ from panda3d.core import (
 )
 import numpy as np
 
-NUM_SPRITES = 2048
+NUM_SPRITES = 4096
 
 CONFIG = """
 win-size 1920 1040
@@ -28,8 +28,8 @@ if __name__ == "__main__":
 
     raw_ssbo_data = np.zeros(4*NUM_SPRITES, dtype=np.float32)
     for idx in range(NUM_SPRITES):
-        raw_ssbo_data[idx*4] = idx%32.                 # x
-        raw_ssbo_data[idx*4+1] = idx/32.               # y
+        raw_ssbo_data[idx*4] = idx%64.                 # x
+        raw_ssbo_data[idx*4+1] = idx/64.               # y
         #raw_ssbo_data[idx*4+2] =  .3 + .2 * np.sin(idx)    # z
         raw_ssbo_data[idx*4+2] = 0.                     # z
 
@@ -86,10 +86,16 @@ if __name__ == "__main__":
 
     base.win.set_clear_color_active(True)
 
-    base.cam.set_pos(16., -10., 1.5)
-    base.cam.set_hpr(0.,-5.,0.)
-    #base.cam.look_at(sprite_np)
-
+    #base.cam.set_pos(16., -10., 2.5)
+    #base.cam.set_hpr(0.,-5.,0.)
+    
     base.accept("escape", base.userExit)
+    
+    def rotate_cam(task):
+        base.cam.set_pos(np.sin(2.*np.pi/3.+task.frame/200.)*32 + 24.,-np.cos(2.*np.pi/3.+task.frame/400.)*32. + 40.,np.cos(task.frame/800.)*3. + 2.)
+        base.cam.look_at((32., NUM_SPRITES/128., 0.))
+        return task.cont
+
+    base.taskMgr.add(rotate_cam, "rotate-camera")
 
     base.run()
