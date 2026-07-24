@@ -20,13 +20,13 @@ void main() {
 
     vec4 posn = p3d_ModelViewMatrix * vec4(pos[sprite_idx], 1.);
     if (corner_idx == 0) { // middle bottom
-        posn.y -= .3 + max(0.1, pos[sprite_idx].z)*.02*sin(osg_FrameTime*25.);
+        posn.y -= .15 + .05*sin(osg_FrameTime/12.);
         texcoord = vec2(.5, -.5);
     } else if (corner_idx == 1) { // top left
-        posn.x -= .3 + max(0.1, pos[sprite_idx].z)*.02*sin(osg_FrameTime*25.);
+        posn.x -= .15 + .05*sin(osg_FrameTime/12.);
         texcoord = vec2(-.9, 1.);
     } else { // top right
-        posn.x += .3 + max(0.2, pos[sprite_idx].z)*.03*sin(osg_FrameTime*25.);
+        posn.x += .15 + .05*sin(osg_FrameTime/12.);
         texcoord = vec2(1.9, 1.);
     }
 
