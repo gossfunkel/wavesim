@@ -11,15 +11,18 @@ layout (std430, binding = 0) buffer sprite_buff {
     vec3 pos[];
 };
 
+layout (std430, binding = 0) readonly buffer audio_buff { 
+    float samples[];
+};
+
 void main() {
     uint sprite_id = 16 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y;
 
-    pos[sprite_id].x = (16. * sin(.03125*osg_FrameTime + 64.*(float(sprite_id)/float(num_sprites))*TAU) + 16.) *
-                        (cos(osg_FrameTime + (float(sprite_id)/float(num_sprites))*TAU)*.5 + .5);
-    pos[sprite_id].y = (16. * cos(.03125*osg_FrameTime + 64.*(float(sprite_id)/float(num_sprites))*TAU) + 16.) *
-                        (cos(osg_FrameTime + (float(sprite_id)/float(num_sprites))*TAU)*.5 + .5);
-    pos[sprite_id].z = (16. * -sin(.03125*osg_FrameTime + 128.*(float(sprite_id)/float(num_sprites))*TAU) + 16.)*
-                        (sin(osg_FrameTime + (float(sprite_id)/float(num_sprites))*TAU)*.5 + .5) + 
-                        (16. * sin(.03125*osg_FrameTime + 128.*(float(sprite_id)/float(num_sprites))*TAU) + 16.)*
-                        (sin(.25 * osg_FrameTime + (float(sprite_id)/float(num_sprites))*TAU)*.25 - .125);
+    float rad = 15. + samples[sprite_id];
+
+    pos[sprite_id].x = rad + (rad * cos(TAU*(float(sprite_id)/float(num_sprites))));
+    pos[sprite_id].y = rad + (rad * -sin(64.*(float(sprite_id)/float(num_sprites))*TAU + osg_FrameTime*.25))*
+                        (-sin(TAU*(float(sprite_id)/float(num_sprites))));
+    pos[sprite_id].z = rad + (rad * cos(64.*(float(sprite_id)/float(num_sprites))*TAU + osg_FrameTime*.25))*
+                        (-sin(TAU*(float(sprite_id)/float(num_sprites))));
 }

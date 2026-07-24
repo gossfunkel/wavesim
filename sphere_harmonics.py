@@ -7,8 +7,11 @@ from panda3d.core import (
     ModelRoot, BoundingBox, ShaderBuffer, Texture, SamplerState, ShaderAttrib
 )
 import numpy as np
+import scipy.io.wavfile as sp
+import sounddevice as sd
+import struct
 
-NUM_SPRITES = 4096
+NUM_SPRITES = 8192
 
 CONFIG = """
 win-size 1920 1040
@@ -26,9 +29,30 @@ if __name__ == "__main__":
     ShowBase()
     base.set_background_color(0.,0.,0.,1.)
 
-    raw_ssbo_data = np.zeros(4*NUM_SPRITES, dtype=np.float32)
+    filename="test_tone.wav"
 
-    ssbo = ShaderBuffer('sprites', raw_ssbo_data.tobytes(), GeomEnums.UHStatic)
+    with open(filename, 'rb') as wav_file:
+        header_beginning = wav_file.read(0x18)
+        # TODO: get bit depth from header
+        num_channels = struct.unpack_from('<H', header_beginning, 0x16)[0]
+
+    sample_rate, base.audio = sp.read(filename)
+
+    device = sd.default.device
+    print(f"== Initialising stream with {num_channels} channels at {sample_rate}Hz, " +
+           f"default device ({device}) set")
+    base.stream = sd.OutputStream(samplerate=sample_rate, device=device, channels=num_channels, 
+                                  dtype=np.float32)
+    base.stream.start()
+
+    base.samplerate, base.audio = sp.read(filename)
+
+    audio_ssbo = ShaderBuffer("audio_buff", np.append(np.zeros(sample_rate+20), base.audio[:]).tobytes(), 
+                        GeomEnums.UHStatic)
+
+    raw_sprite_data = np.zeros(4*NUM_SPRITES, dtype=np.float32)
+
+    sprite_ssbo = ShaderBuffer('sprites', raw_sprite_data.tobytes(), GeomEnums.UHStatic)
 
     vtx_format = GeomVertexFormat.get_empty()
     vtx_data = GeomVertexData('sprites', vtx_format, GeomEnums.UH_static)
@@ -50,7 +74,7 @@ if __name__ == "__main__":
     sprite_shader = Shader.load(Shader.SL_GLSL, "sphere_harmonics_sprites.vert", "sphere_harmonics_sprites.frag")
     sprite_np = base.render.attach_new_node(geom_node)
     sprite_np.set_shader(sprite_shader)
-    sprite_np.set_shader_input("sprite_buff", ssbo)
+    sprite_np.set_shader_input("sprite_buff", sprite_ssbo)
     sprite_np.set_shader_input("num_sprites", NUM_SPRITES)
     sprite_np.set_texture(sprite_tex)
     sprite_np.set_two_sided(True)
@@ -62,7 +86,8 @@ if __name__ == "__main__":
     compute_node.add_dispatch(NUM_SPRITES // 64, 4, 1)
     compute_np = base.render.attach_new_node(compute_node)
     compute_np.set_shader(Shader.load_compute(Shader.SL_GLSL, "sphere_harmonics.comp"))
-    compute_np.set_shader_input("sprite_buff", ssbo)
+    compute_np.set_shader_input("sprite_buff", sprite_ssbo)
+    compute_np.set_shader_input("audio_buff", audio_ssbo)
     compute_np.set_shader_input("num_sprites", NUM_SPRITES)
 
     filter_mgr = FilterManager(base.win, base.cam)
@@ -88,10 +113,25 @@ if __name__ == "__main__":
     base.accept("escape", base.userExit)
     
     def rotate_cam(task):
-        base.cam.set_pos(np.sin(2.*np.pi/3.+task.frame/400.)*64. + 64.,-np.cos(2.*np.pi/3.+task.frame/400.)*64. - 64.,np.cos(task.frame/800.)*8. + 8.)
-        base.cam.look_at((8., 8., 6.))
+        base.cam.set_pos(np.sin(task.frame/400.)*32. + 32.,-np.cos(task.frame/400.)*64. - 32.,np.cos(task.frame/800.)*16. + 18.)
+        base.cam.look_at((16., 16., 16.))
         return task.cont
 
     base.taskMgr.add(rotate_cam, "rotate-camera")
+
+    def call_play_audio(task):                                          # panda3d task to feed the audio buffer
+        remaining = base.stream.write_available
+        if remaining < len(base.audio):
+            base.stream.write(base.audio[:remaining])
+            base.audio = base.audio[remaining:]
+            return task.cont
+        else:
+            base.stream.write(base.audio)
+            print("== Stopping stream")
+            base.stream.stop()
+            return task.done
+
+    print(f"== Playing file {filename}; {base.audio.shape[0]/base.samplerate}s duration...")
+    taskMgr.add(call_play_audio, "play_audio")
 
     base.run()

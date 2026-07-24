@@ -18,15 +18,20 @@ void main() {
     sprite_idx = gl_VertexID / 3;
     uint corner_idx = gl_VertexID % 3;
 
+    //float frame_phase = mod(osg_FrameTime, 1.);
+
     vec4 posn = p3d_ModelViewMatrix * vec4(pos[sprite_idx], 1.);
     if (corner_idx == 0) { // middle bottom
-        posn.y -= .15 + .05*sin(osg_FrameTime/12.);
+        //posn.y -= .25 + .05*(min(frame_phase, .5) - (max(frame_phase, .5) - .5));
+        posn.y -= .25 + .025*(sin(osg_FrameTime*18.));
         texcoord = vec2(.5, -.5);
     } else if (corner_idx == 1) { // top left
-        posn.x -= .15 + .05*sin(osg_FrameTime/12.);
+        //posn.x -= .25 + .05*(min(frame_phase, .5) - (max(frame_phase, .5) - .5));
+        posn.x -= .25 + .025*(sin(osg_FrameTime*18.));
         texcoord = vec2(-.9, 1.);
     } else { // top right
-        posn.x += .15 + .05*sin(osg_FrameTime/12.);
+        //posn.x += .25 + .05*(min(frame_phase, .5) - (max(frame_phase, .5) - .5));
+        posn.x += .25 + .025*(sin(osg_FrameTime*18.));
         texcoord = vec2(1.9, 1.);
     }
 
