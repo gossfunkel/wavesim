@@ -8,7 +8,7 @@ from panda3d.core import (
 )
 import numpy as np
 
-NUM_VERTS = 256
+NUM_VERTS = 2048
 
 CONFIG = """
 win-size 1920 1040
@@ -98,5 +98,8 @@ if __name__ == "__main__":
         return task.cont
 
     #base.taskMgr.add(rotate_cam, "rotate-camera")
+
+    base.cam.set_pos(16., -8., 1.)
+    base.cam.look_at(16., 16., 0.)
 
     base.run()
