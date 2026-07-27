@@ -8,7 +8,7 @@ from panda3d.core import (
 )
 import numpy as np
 
-NUM_VERTS = 2048
+NUM_VERTS = 8192
 
 CONFIG = """
 win-size 1920 1040
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     ShowBase()
     base.set_background_color(0.,0.,0.,1.)
 
-    row_len = 32
+    row_len = 64
 
     raw_ssbo_data = np.zeros(4*NUM_VERTS, dtype=np.float32)
     for idx in range(NUM_VERTS):
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     geom_tris = GeomTriangles(GeomEnums.UH_static)
     for quad in range(NUM_VERTS-(NUM_VERTS//row_len)-(row_len-1)):
-        quadstart = (quad%(row_len-1)) + (quad // (row_len-1))*32
+        quadstart = (quad%(row_len-1)) + (quad // (row_len-1))*row_len
         quadstart_row2 = quadstart + row_len
         geom_tris.add_vertex(quadstart)
         geom_tris.add_vertex(quadstart_row2)
@@ -93,13 +93,14 @@ if __name__ == "__main__":
     base.accept("escape", base.userExit)
     
     def rotate_cam(task):
-        base.cam.set_pos(np.sin(2.*np.pi/3.+task.frame/200.)*32 + 24.,-np.cos(2.*np.pi/3.+task.frame/400.)*32. + 40.,np.cos(task.frame/800.)*3. + 2.)
-        base.cam.look_at((32., NUM_VERTS/128., 0.))
+        base.cam.set_pos(np.sin(2.*np.pi/3.+task.frame/200.)*(row_len/2.) + (row_len/2.),
+            -np.cos(2.*np.pi/3.+task.frame/400.)*((NUM_VERTS//row_len)//2.) + 40.,np.cos(task.frame/800.)*3. + 2.)
+        base.cam.look_at((row_len/2., (NUM_VERTS//row_len)//2., 0.))
         return task.cont
 
     #base.taskMgr.add(rotate_cam, "rotate-camera")
 
-    base.cam.set_pos(16., -8., 1.)
-    base.cam.look_at(16., 16., 0.)
+    base.cam.set_pos(row_len/2., -8., 1.)
+    base.cam.look_at(row_len/2., (NUM_VERTS//row_len)//2., 0.)
 
     base.run()

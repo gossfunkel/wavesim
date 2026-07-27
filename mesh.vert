@@ -18,17 +18,20 @@ layout (std430, binding = 0) buffer vert_buff {
 void main() {
     float offset = 0.;
     //texcoord = vec2(p3d_Vertex.x,p3d_MultiTexCoord0.y);
-    if (gl_VertexID%3 == 0) {
-        offset = TAU/6.;
-    } else if (gl_VertexID%3 == 1) {
-        offset = 3.*TAU/6.;
-    } else {
-        offset = 5.*TAU/6.;
-    }
+    /*
+    if (gl_VertexID%4 == 0) {
+        offset = TAU/4.;
+    } else if (gl_VertexID%4 == 1) {
+        offset = TAU/2.;
+    } else if (gl_VertexID%4 == 2) {
+        offset = 3.*TAU/4.;
+    }*/
 
-    vertex_col = vec4(sin(osg_FrameTime + offset),
-                      sin(osg_FrameTime + offset + TAU/3.),
-                      sin(osg_FrameTime + offset + 2.*TAU/3.),1.);
+    offset = TAU * (pos[gl_VertexID].x / 64.) + pos[gl_VertexID].y;
+
+    vertex_col = vec4(abs(sin(osg_FrameTime + offset)/3.),
+                      abs(sin(osg_FrameTime + offset + TAU/3.)/3.),
+                      abs(sin(osg_FrameTime + offset + 2.*TAU/3.)/3.),1.);
 
     gl_Position = p3d_ModelViewProjectionMatrix * vec4(pos[gl_VertexID], 1.);
 }
