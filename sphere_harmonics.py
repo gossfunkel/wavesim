@@ -11,7 +11,7 @@ import scipy.io.wavfile as sp
 import sounddevice as sd
 import struct
 
-NUM_SPRITES = 8192
+NUM_SPRITES = 32568
 
 CONFIG = """
 win-size 1920 1040
@@ -45,10 +45,12 @@ if __name__ == "__main__":
                                   dtype=np.float32)
     base.stream.start()
 
-    base.samplerate, base.audio = sp.read(filename)
+    fft_out = np.array([])
 
-    audio_ssbo = ShaderBuffer("audio_buff", np.append(np.zeros(sample_rate+20), base.audio[:]).tobytes(), 
-                        GeomEnums.UHStatic)
+    for chunk in range(len(base.audio)//NUM_SPRITES):
+        np.append(fft_out,np.fft.fft(base.audio[chunk*NUM_SPRITES:], n=NUM_SPRITES))
+
+    audio_ssbo = ShaderBuffer("audio_buff", np.real(fft_out).astype(np.float32).tobytes(), GeomEnums.UHStatic)
 
     raw_sprite_data = np.zeros(4*NUM_SPRITES, dtype=np.float32)
 
@@ -86,9 +88,10 @@ if __name__ == "__main__":
     compute_node.add_dispatch(NUM_SPRITES // 64, 4, 1)
     compute_np = base.render.attach_new_node(compute_node)
     compute_np.set_shader(Shader.load_compute(Shader.SL_GLSL, "sphere_harmonics.comp"))
+    compute_np.set_shader_input("num_sprites", NUM_SPRITES)
+    compute_np.set_shader_input("audio_len", len(fft_out))
     compute_np.set_shader_input("sprite_buff", sprite_ssbo)
     compute_np.set_shader_input("audio_buff", audio_ssbo)
-    compute_np.set_shader_input("num_sprites", NUM_SPRITES)
 
     filter_mgr = FilterManager(base.win, base.cam)
     #filter_mgr.resizeBuffers()
@@ -131,7 +134,7 @@ if __name__ == "__main__":
             base.stream.stop()
             return task.done
 
-    print(f"== Playing file {filename}; {base.audio.shape[0]/base.samplerate}s duration...")
+    print(f"== Playing file {filename}; {base.audio.shape[0]/sample_rate}s duration...")
     taskMgr.add(call_play_audio, "play_audio")
 
     base.run()
