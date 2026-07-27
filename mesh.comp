@@ -12,8 +12,14 @@ layout (std430, binding = 0) buffer vert_buff {
 
 void main() {
     uint vtx_id = 16 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y;
-
+    /*
     pos[vtx_id].z = sin(TAU * (float(vtx_id)/float(num_verts)) + osg_FrameTime)
                     + cos(2. * TAU * (pos[vtx_id].x/64.) + osg_FrameTime)
                     - sin(3. * TAU/4. * (pos[vtx_id].y/64.) + osg_FrameTime);
+    */
+    float radius = 42. + 16 * sin(osg_FrameTime);
+
+    float dist_to_centre = (pos[vtx_id].x - 32.)*(pos[vtx_id].x - 32.)
+                         + (pos[vtx_id].y - 32.)*(pos[vtx_id].y - 32.);
+    pos[vtx_id].z = .5 - min(abs(dist_to_centre - radius)*.02,.5);
 }
