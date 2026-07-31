@@ -41,14 +41,9 @@ void main() {
     //                  abs(sin(osg_FrameTime + offset + TAU/3.)/3.),
     //                  abs(sin(osg_FrameTime + offset + 2.*TAU/3.)/3.),1.);
     float blueval = 0.;
-    if (uint(osg_FrameTime)%num_verts == (gl_VertexID-1)%num_verts) {
-        blueval = mod(osg_FrameTime,.1) *.5;
-    } else if (uint(osg_FrameTime)%num_verts == gl_VertexID) {
-        blueval = .5 + mod(osg_FrameTime,1.) * .5;
-    } else if (uint(osg_FrameTime)%num_verts == (gl_VertexID+1)%num_verts) {
-        blueval = 1. - mod(osg_FrameTime,1.) * .5;
-    } else if (uint(osg_FrameTime)%num_verts == (gl_VertexID+2)%num_verts) {
-        blueval = .5 - mod(osg_FrameTime,1.) * .5;
+    if (uint(osg_FrameTime)%num_sectors == sector &&
+        stack == float(num_stacks/2)) {
+        blueval = 1.;
     }
     vertex_col = vec4(stack/float(num_stacks),sector/float(num_sectors), blueval,1.);
 
