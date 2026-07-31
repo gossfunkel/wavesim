@@ -36,6 +36,8 @@ void main() {
         rad += 1. - mod(osg_FrameTime,1.) 5;
     }
     */
+    rad += cos(5.*TAU * sector/float(num_sectors) + osg_FrameTime)*.5;
+    rad += 1. + sin(6.*TAU * stack/float(num_stacks) + osg_FrameTime);
     
     float xy = rad * cos(theta);
     float phi = sector * sector_len;

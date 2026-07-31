@@ -4,7 +4,8 @@ from panda3d.core import (
     load_prc_file_data, NodePath, Vec3, GeomNode, Geom, GeomEnums, ModelRoot,
     GeomVertexFormat, GeomVertexData, GeomVertexWriter, GeomTriangles, 
     BoundingVolume, BoundingBox, ComputeNode, ColorBlendAttrib, CardMaker,
-    Shader, ShaderBuffer, Texture, SamplerState, ShaderAttrib
+    Shader, ShaderBuffer, Texture, SamplerState, ShaderAttrib, 
+    Material, DirectionalLight, AmbientLight
 )
 import numpy as np
 
@@ -19,6 +20,7 @@ gl-debug-buffers true
 gl-force-glsl-version 430 // required for ssbo format
 framebuffer-srgb true
 hardware-animated-vertices true
+basic-shaders-only false
 """
 load_prc_file_data('', CONFIG)
 
@@ -100,7 +102,12 @@ if __name__ == "__main__":
     geom_node = GeomNode("gnode")
     geom_node.add_geom(geom)
 
-    mesh_shader = Shader.load(Shader.SL_GLSL, "mesh_sphere.vert", "mesh.frag")
+    metal_mat = Material()
+    metal_mat.setShininess(5.0)
+    metal_mat.setAmbient((.9, .9, 1., 1.))
+    metal_mat.setSpecular((.8,1.,.9,1.))
+
+    mesh_shader = Shader.load(Shader.SL_GLSL, "mesh_sphere.vert", "mesh_sphere.frag")
     mesh_np = base.render.attach_new_node(geom_node)
     mesh_np.set_shader(mesh_shader)
     mesh_np.set_shader_input("vert_buff", ssbo)
@@ -109,8 +116,11 @@ if __name__ == "__main__":
     mesh_np.set_shader_input("num_sectors", num_sectors)
     #mesh_np.set_two_sided(True)
     mesh_np.set_attrib(ColorBlendAttrib.make(ColorBlendAttrib.M_add, ColorBlendAttrib.O_incoming_alpha, ColorBlendAttrib.O_one))
-    mesh_np.set_depth_write(False)
+    mesh_np.set_depth_write(True)
+    mesh_np.set_depth_offset(3)
     mesh_np.node().set_bounds_type(BoundingVolume.BT_box)
+    mesh_np.set_color_off()
+    mesh_np.set_material(metal_mat)
 
     compute_node = ComputeNode("compute")
     compute_node.add_dispatch(num_verts // 64, 4, 1)
@@ -137,6 +147,21 @@ if __name__ == "__main__":
     # #screen_card.set_attrib(ColorBlendAttrib.make(ColorBlendAttrib.M_add, ColorBlendAttrib.O_one , ColorBlendAttrib.O_one_minus_incoming_alpha))
     # screen_card.set_attrib(ColorBlendAttrib.make(ColorBlendAttrib.M_add, ColorBlendAttrib.O_incoming_alpha , ColorBlendAttrib.O_one))
     #base.win.set_clear_color_active(True)
+
+    ambient = AmbientLight('ambient')
+    ambient.setColor((0.075, 0.12, 0.15, 1))
+    ambient_np = render.attachNewNode(ambient)
+    render.setLight(ambient_np)
+
+    back_light = DirectionalLight('light')
+    back_light.set_color((.9,.6,1.,1.))
+    back_light.set_shadow_caster(True, 1024, 1024)
+    back_light_np = render.attachNewNode(back_light)
+    back_light_np.set_pos(-10.,0., 45.)
+    back_light_np.set_hpr(-30.,30.,0.)
+    render.set_light(back_light_np)
+
+    render.setShaderAuto()
     
     base.accept("escape", base.userExit)
     
