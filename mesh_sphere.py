@@ -141,8 +141,8 @@ if __name__ == "__main__":
     base.accept("escape", base.userExit)
     
     def rotate_cam(task):
-        base.cam.set_pos(np.sin(2.*np.pi/3.+task.frame/200.)*sphere_rad*6.,
-            -np.cos(2.*np.pi+task.frame/400.)*sphere_rad*6.,np.cos(task.frame/800.)*3. + 2.)
+        base.cam.set_pos(np.sin(task.frame/200.)*sphere_rad*6.,
+            -np.cos(2.*np.pi+task.frame/200.)*sphere_rad*6.,np.cos(task.frame/800.)*3. + 2.)
         base.cam.look_at((0., 0., 1.))
         return task.cont
 

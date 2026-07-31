@@ -40,12 +40,14 @@ void main() {
     //vertex_col = vec4(abs(sin(osg_FrameTime + offset)/3.),
     //                  abs(sin(osg_FrameTime + offset + TAU/3.)/3.),
     //                  abs(sin(osg_FrameTime + offset + 2.*TAU/3.)/3.),1.);
-    float blueval = 0.;
+    float val = 0.;
     if (uint(osg_FrameTime)%num_sectors == sector &&
         stack == float(num_stacks/2)) {
-        blueval = 1.;
+        val = 1.;
     }
-    vertex_col = vec4(stack/float(num_stacks),sector/float(num_sectors), blueval,1.);
+    float stripes = float(uint(stack)%2)*.63;
+    float columns = float(uint(sector)%3)*.82;
+    vertex_col = vec4(columns+val,stripes +val,.23 + val,1.);
 
     gl_Position = p3d_ModelViewProjectionMatrix * vec4(pos[gl_VertexID], 1.);
 }
