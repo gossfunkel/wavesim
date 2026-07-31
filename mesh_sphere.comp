@@ -3,8 +3,11 @@
 const float TAU = 6.2831853;
 
 layout (local_size_x = 4, local_size_y = 4) in;
-uniform uint num_verts;
 uniform float osg_FrameTime;
+uniform float sphere_rad;
+uniform uint num_verts;
+uniform uint num_stacks;
+uniform uint num_sectors;
 
 layout (std430, binding = 0) buffer vert_buff {
     vec3 pos[];
@@ -12,9 +15,31 @@ layout (std430, binding = 0) buffer vert_buff {
 
 void main() {
     uint vtx_id = 16 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y;
+    float stack, sector = 0.;
+    float rad = sphere_rad;
+    if (vtx_id != 0) {
+        stack = float(((vtx_id-1)/num_sectors)+1);
+        sector = float(((vtx_id-1)%num_sectors));
+    }
+    float sector_len = TAU / float(num_sectors);
+    float stack_len = (TAU/2.) / float(num_stacks);
+    float theta = TAU / 4. - stack * stack_len;
+
     /*
-    pos[vtx_id].z = sin(TAU * (float(vtx_id)/float(num_verts)) + osg_FrameTime)
-                    + cos(2. * TAU * (pos[vtx_id].x/64.) + osg_FrameTime)
-                    - sin(3. * TAU/4. * (pos[vtx_id].y/64.) + osg_FrameTime);
+    if (uint(osg_FrameTime)%num_verts == (vtx_id-1)%num_verts) {
+        rad += mod(osg_FrameTime,1.);
+    } else if (uint(osg_FrameTime)%num_verts == vtx_id) {
+        rad += 1. +mod(osg_FrameTime,1.) * .5;
+    } else if (uint(osg_FrameTime)%num_verts == (vtx_id+1)%num_verts) {
+        rad += 2. - mod(osg_FrameTime,1.) * .5;
+    } else if (uint(osg_FrameTime)%num_verts == (vtx_id+2)%num_verts) {
+        rad += 1. - mod(osg_FrameTime,1.) 5;
+    }
     */
+    
+    float xy = rad * cos(theta);
+    float phi = sector * sector_len;
+    pos[vtx_id].x = xy * cos(phi);
+    pos[vtx_id].y = xy * sin(phi);
+    pos[vtx_id].z = rad * sin(theta);
 }

@@ -27,8 +27,8 @@ if __name__ == "__main__":
     base.set_background_color(0.,0.,0.,1.)
 
     sphere_rad = 32
-    num_stacks = 10
-    num_sectors = 10
+    num_stacks = 25
+    num_sectors = 25
     sector_len = TAU / num_sectors;
     stack_len = (TAU/2.) / num_stacks;
     num_verts = num_stacks + (num_stacks - 2) * (num_sectors - 1)
@@ -73,24 +73,24 @@ if __name__ == "__main__":
                     geom_tris.add_vertex(2 + sector)
             elif (stack == num_stacks-2):
                 geom_tris.add_vertex(num_verts-1)
-                geom_tris.add_vertex(1 + (stack-1)*num_sectors + sector)
                 if (sector == num_sectors-1):
                     geom_tris.add_vertex(1 + (stack-1)*num_sectors)
                 else:
                     geom_tris.add_vertex(2 + (stack-1)*num_sectors + sector)
+                geom_tris.add_vertex(1 + (stack-1)*num_sectors + sector)
             else:
                 geom_tris.add_vertex(1 + (stack-1)*num_sectors + sector)
+                geom_tris.add_vertex(1 + stack*num_sectors + sector)
                 if (sector == num_sectors-1):
+                    geom_tris.add_vertex(1 + (stack-1)*num_sectors)
                     geom_tris.add_vertex(1 + (stack-1)*num_sectors)
                 else:
                     geom_tris.add_vertex(2 + (stack-1)*num_sectors + sector)
-                geom_tris.add_vertex(1 + stack*num_sectors + sector)
+                    geom_tris.add_vertex(2 + (stack-1)*num_sectors + sector)
                 geom_tris.add_vertex(1 + stack*num_sectors + sector)
                 if (sector == num_sectors-1):
-                    geom_tris.add_vertex(1 + (stack-1)*num_sectors)
                     geom_tris.add_vertex(1 + stack*num_sectors)
                 else:
-                    geom_tris.add_vertex(2 + (stack-1)*num_sectors + sector)
                     geom_tris.add_vertex(2 + stack*num_sectors + sector)
 
     geom = Geom(vtx_data)
@@ -100,11 +100,14 @@ if __name__ == "__main__":
     geom_node = GeomNode("gnode")
     geom_node.add_geom(geom)
 
-    mesh_shader = Shader.load(Shader.SL_GLSL, "mesh.vert", "mesh.frag")
+    mesh_shader = Shader.load(Shader.SL_GLSL, "mesh_sphere.vert", "mesh.frag")
     mesh_np = base.render.attach_new_node(geom_node)
     mesh_np.set_shader(mesh_shader)
     mesh_np.set_shader_input("vert_buff", ssbo)
-    mesh_np.set_two_sided(True)
+    mesh_np.set_shader_input("num_verts", num_verts)
+    mesh_np.set_shader_input("num_stacks", num_stacks)
+    mesh_np.set_shader_input("num_sectors", num_sectors)
+    #mesh_np.set_two_sided(True)
     mesh_np.set_attrib(ColorBlendAttrib.make(ColorBlendAttrib.M_add, ColorBlendAttrib.O_incoming_alpha, ColorBlendAttrib.O_one))
     mesh_np.set_depth_write(False)
     mesh_np.node().set_bounds_type(BoundingVolume.BT_box)
@@ -114,7 +117,10 @@ if __name__ == "__main__":
     compute_np = base.render.attach_new_node(compute_node)
     compute_np.set_shader(Shader.load_compute(Shader.SL_GLSL, "mesh_sphere.comp"))
     compute_np.set_shader_input("vert_buff", ssbo)
+    compute_np.set_shader_input("sphere_rad", sphere_rad)
     compute_np.set_shader_input("num_verts", num_verts)
+    compute_np.set_shader_input("num_stacks", num_stacks)
+    compute_np.set_shader_input("num_sectors", num_sectors)
 
     # filter_mgr = FilterManager(base.win, base.cam)
     # #filter_mgr.resizeBuffers()
